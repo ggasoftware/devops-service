@@ -10,7 +10,7 @@ This software was developed for supporting development and operations activities
 
 ##Devops-service installation##
 
-Devops service is a REST web service which incapsulates all apllication logic.
+Devops service is a REST web service which incapsulates all application logic.
 
 Setup server:
 	yum install ruby
