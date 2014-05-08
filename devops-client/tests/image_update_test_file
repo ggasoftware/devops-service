@@ -1,0 +1,6 @@
+{
+  "provider": "openstack",
+  "image_id": "89ecfe3f-9f25-4982-a0cf-b9b3814c02d6",
+  "remote_user": "root",
+  "id": "cirros"
+}

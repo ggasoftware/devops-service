@@ -1,0 +1,3 @@
+class InvalidRecord < Exception
+
+end

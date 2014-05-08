@@ -1,0 +1,268 @@
+en:
+  config:
+    invalid:
+      host: "Empty or invalid property 'host' in configuration file '%{file}'\n\nCheck your configuration '%{file}' file or use --host option"
+      empty: "Empty or undefined property '%{key}' in configuration file '%{file}'"
+      proxy_type: "Invalid 'proxy_type' property in configuration file '%{file}', available values: %{values}"
+      parameter: "Wrong config file parameter: -c file"
+    property:
+      lang: "Language (%{langs})"
+      host: "Devops server host and port"
+      api: "API version"
+      username: "Username"
+      password: "Password"
+      proxy_type: "Proxy type (none, system, custom)"
+      http_proxy: "HTTP proxy"
+    created: "Configuration file '%{file}' has been created"
+    not_exist: "File '%{file}' does not exist"
+  completion:
+    message: "Bash completion file has been copied to '%{file}'"
+    put: "Put '. %{file}' to your .bashrc file"
+  log:
+    info: "INFO: %{msg}"
+    warn: "WARN: %{msg}"
+    error: "ERROR: %{msg}"
+  headers:
+    flavor: "Flavor"
+    template: "Bootstrap template"
+    deploy: "Deploy"
+    filters: "Filters"
+    group: "Security groups"
+    image: "Image"
+    key: "Key"
+    network: "Network"
+    project: "Project"
+    project_env: "Project environment"
+    provider: "Provider"
+    server: "Server"
+    script: "Script"
+    tag: "Tag"
+    user: "User"
+  handler:
+    flavor:
+      list:
+        empty: "Flavors list is empty"
+      env:
+        list:
+          empty: "Project environment list is empty"
+    image:
+      question:
+        delete: "Are you sure to delete image '%{name}'?"
+        create: "Create image?"
+      create:
+        ssh_user: "The ssh username"
+        template: "Bootstrap template or empty value"
+    filter:
+      question:
+        delete: "Are you sure to delete image filter(s) '%{name}'?"
+    key:
+      question:
+        delete: "Are you sure to delete key '%{name}'?"
+    project:
+      list:
+        empty: "Project list is empty"
+      question:
+        delete: "Are you sure to delete project '%{name}'?"
+        create: "Create project?"
+        update: "Update project?"
+        add_env: "Add environment?"
+      parameter:
+        run_list:
+          empty: "WARN: run list is empty, continue?"
+      exist: "Project '%{project}' already exist"
+      create:
+        invalid_json: "Invalid JSON in file '%{file}'"
+        env: "Deploy environment identifier"
+        env_exist: "Deploy environment '%{env}' already exist"
+        flavor:
+          not_found: "No such flavor"
+        subnet:
+          ec2: "Subnet (or Enter)"
+          openstack: "Subnets"
+        user: "Users, you will be added automatically"
+        run_list:
+          invalid: "ERROR: invalid run list elements: %{list}"
+      invalid_subcommand: "Invalid subcommand for '%{cmd}': '%{scmd}'"
+    script:
+      question:
+        delete: "Are you sure to delete script '%{name}'?"
+    tag:
+      question:
+        delete: "Are you sure to delete tag(s) '%{name}' from node '%{node}'?"
+    user:
+      question:
+        delete: "Are you sure to delete user '%{name}'?"
+      password_for: "Password for %{user}:"
+    server:
+      question:
+        delete: "Are you sure to delete server '%{name}'?"
+    message:
+      choose_list_default: "Choose %{name} (comma separated), like 1,2,3 or empty for default value '%{default}': "
+      choose_list: "Choose %{name} (comma separated), like 1,2,3: "
+      choose: "Choose '%{name}': "
+    error:
+      parameter:
+        undefined: "ERROR: parameter '%{name}' is undefined"
+      unauthorized: "401 - Unauthorized"
+      file:
+        not_exist: "File '%{file}' does not exist"
+      number:
+        invalid: "Invalid number"
+      list:
+        empty: "%{name} list is empty"
+  output:
+    table_header:
+      api_version: "API version"
+      number: "Number"
+      id: "Id"
+      name: "Name"
+      provider: "Provider"
+      remote_user: "Remote user"
+      disk: "Disk"
+      virtual_cpus: "Virtual CPUs"
+      ram: "RAM"
+      image_id: "Image Id"
+      protocol: "Protocol"
+      from: "From"
+      to: "To"
+      cidr: "CIDR"
+      description: "Description"
+      status: "Status"
+      template: "Bootstrap template"
+      scope: "Scope"
+      subnet: "Subnet"
+      vpc_id: "VPC Id"
+      zone: "Zone"
+      deploy_env: "Environment"
+      node_name: "Node name"
+      image: "Image"
+      flavor: "Flavor"
+      group: "Group"
+      key: "Keys"
+      templates: "Templates"
+      run_list: "Run list"
+      groups: "Security groups"
+      subnets: "Subnets"
+      users: "Users"
+      server: "Server"
+      project: "Project"
+      script: "Script"
+      network: "Network"
+      filter: "Filter"
+      creation: "Creation"
+      bootatrap: "Bootstrap"
+      deletion: "Deletion"
+      instance_id: "Instance Id"
+      subproject: "Subproject"
+      node_number: "Node number"
+      tag: "Tag"
+      privileges: "Privileges"
+      email: "E-mail"
+      state: "State"
+      public_ip: "Public IP"
+      private_ip: "Private IP"
+      dns: "DNS"
+      keypair: "Keypair"
+      created_at: "Created at"
+      created_by: "Created by"
+    title:
+      flavor:
+        list: "Flavors"
+      bootstrap_template:
+        list: "Bootstrap templates"
+      filter:
+        list: "Filters"
+      group:
+        list: "Security groups"
+      image:
+        list: "Images"
+        show: "Image '%{id}' information"
+      key:
+        list: "Keys"
+      network:
+        list: "Networks"
+      project:
+        list: "Projects"
+        show: "Project '%{name}' information"
+        servers: "Project '%{title}' servers"
+        test: "Project test: %{project} - %{env}"
+      provider:
+        list: "Providers"
+      script:
+        list: "Scripts"
+      server:
+        list: "Servers"
+        chef: "Chef servers"
+        ec2: "Ec2 servers"
+        openstack: "Openstack servers"
+        show: "Server '%{name}'"
+      tag:
+        list: "Tags"
+      users:
+        list: "Users"
+    not_found:
+      flavor:
+        list: "No flavor found"
+      bootstrap_template:
+        list: "No bootstrap templates found"
+      filter:
+        list: "No filters found"
+      group:
+        list: "No security groups found"
+      image:
+        list: "No images found"
+      key:
+        list: "No keys found"
+      network:
+        list: "No networks found"
+      project:
+        list: "No project found"
+        servers: "No servers for project '%{name}' found"
+      provider:
+        list: "Empty providers list"
+      script:
+        list: "No scripts uploaded"
+      server:
+        list: "No servers found"
+      tag:
+        list: "No tags found"
+      user:
+        list: "No users found"
+  options:
+    usage: "Usage: %{cmd} command [options]"
+    commands: "Commands"
+    options: "Options"
+    common_options: "Common options"
+    common:
+      help: "Show help"
+      confirmation: "Answer 'yes' for all questions"
+      config: "Specify devops client config file (%{file})"
+      version: "devops client version"
+      host: "devops service host address (%{host})"
+      api: "devops service API version (%{api})"
+      username: "devops username (%{username})"
+      format: "Output format: '%{formats}' (%{format})"
+      completion: "Initialize bash completion script"
+    project:
+      header: "Project"
+      create:
+        groups: "Security groups (comma separated list)"
+        deploy_env: "Deploy environment identifier"
+        file: "File in JSON with project settings"
+        subnets: "Subnets identifiers for deploy environment (ec2 - only one subnet, openstack - comma separated list)"
+        flavor: "Specify flavor for the project environment"
+        image: "Specify image identifier for the project environment"
+        run_list: "Additional recipes and roles (comma separated), like recipe[mycookbook::myrecipe],role[myrole]"
+        users: "Users list (comma separated) for deploy environment control"
+        provider: "Provider - 'ec2' or 'openstack'"
+        no_expires: "Without expiry time"
+        expires: "Expiry time (5m, 3h, 2d, 1w, etc)"
+      user_add:
+        deploy_env: "Add user to deploy environment"
+      user_delete:
+        deploy_env: "Delete user from deploy environment"
+      deploy:
+        servers: "Servers list (comma separated) for deploy"
+    script:
+      run:
+        params: "Script arguments (comma separated list)"

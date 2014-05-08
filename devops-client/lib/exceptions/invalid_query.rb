@@ -1,0 +1,4 @@
+class InvalidQuery < StandardError
+
+end
+

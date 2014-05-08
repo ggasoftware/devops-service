@@ -1,0 +1,268 @@
+ru:
+  config:
+    invalid:
+      host: "Пустой или неверный параметр 'host' в конфигурационном файле '%{file}'\n\nПроверьте конфигурационный файл '%{file}' или используйте опцию --host"
+      empty: "Параметр '%{key}' в конфигурационном файле '%{file}' пуст или не определен"
+      proxy_type: "Неверный параметр 'proxy_type' в конфигурационном файле '%{file}', допустимые значения: %{values}"
+      parameter: "Неверный параметр конфигурационного файла: -c file"
+    property:
+      lang: "Язык (%{langs})"
+      host: "Адрес и порт сервера Devops"
+      api: "Версия API"
+      username: "Имя пользователя"
+      password: "Пароль"
+      proxy_type: "Тип прокси (none, system, custom)"
+      http_proxy: "HTTP прокси"
+    created: "Конфигурационный файл '%{file}' создан"
+    not_exist: "Файл '%{file}' не существует"
+  completion:
+    message: "Файл дополнений bash скопирован в '%{file}'"
+    put: "Добавьте '. %{file}' в Ваш .bashrc файл"
+  log:
+    info: "Информация: %{msg}"
+    warn: "Предупреждение: %{msg}"
+    error: "Ошибка: %{msg}"
+  headers:
+    flavor: "Конфигурация"
+    deploy: "Деплой"
+    template: "Шаблон загрузки"
+    filters: "Фильтры"
+    group: "Группы безопасности"
+    image: "Образ"
+    key: "Ключ"
+    network: "Сеть"
+    project: "Проект"
+    project_env: "Окружение проект"
+    provider: "Провайдер"
+    server: "Сервер"
+    script: "Скрипт"
+    tag: "Тег"
+    user: "Пользователь"
+  handler:
+    flavor:
+      list:
+        empty: "Список конфигураций пуст"
+    image:
+      question:
+        delete: "Вы уверены, что хотите удалить образ '%{name}'?"
+        create: "Создать образ?"
+      create:
+        ssh_user: "Имя пользоватлея ssh"
+        template: "Шаблон загрузки или пустое значение"
+    filter:
+      question:
+        delete: "Вы уверены, что хотите удалить фильтр(ы) образа '%{name}'?"
+    key:
+      question:
+        delete: "Вы уверены, что хотите удалить ключ '%{name}'?"
+    project:
+      list:
+        empty: "Список проектов пуст"
+      env:
+        list:
+          empty: "Список окружений проекта пуст"
+      question:
+        delete: "Вы уверены, что хотите удалить проект '%{name}'?"
+        create: "Создать проект?"
+        update: "Обновить проект?"
+        add_env: "Добавить окружение?"
+      parameter:
+        run_list:
+          empty: "Предупреждение: список запуска пуст, продолжить?"
+      exist: "Проект '%{project}' уже существует"
+      create:
+        invalid_json: "Неверный JSON в файле '%{file}'"
+        env: "Идентификатор окружения"
+        env_exist: "Окружение '%{env}' уже существует"
+        flavor:
+          not_found: "Конфигурация не надена"
+        subnet:
+          ec2: "Подсеть (или Enter)"
+          openstack: "Подсети"
+        user: "Пользователи, Вы будете добалены автоматически"
+        run_list:
+          invalid: "ОШИБКА: неверные элементы run_list: %{list}"
+      invalid_subcommand: "Неверная подкомманда для '%{cmd}': '%{scmd}'"
+    script:
+      question:
+        delete: "Вы уверены, что хотите удалить скрипт '%{name}'?"
+    tag:
+      question:
+        delete: "Вы уверены, что хотите удалить тэг(и) '%{name}' из ноды '%{node}'?"
+    user:
+      question:
+        delete: "Вы уверены, что хотите удалить пользователя '%{name}'?"
+      password_for: "Пароль для %{user}:"
+    server:
+      question:
+        delete: "Вы уверены, что хотите удалить сервер '%{name}'?"
+    message:
+      choose_list_default: "Выберите значения из списка (разделенные запятой), например 1,2,3 или оставте пустым для значеия по умолчанию '%{default}': "
+      choose_list: "Выберите значения из списка (разделенные запятой), например 1,2,3: "
+      choose: "Выберите '%{name}': "
+    error:
+      parameter:
+        undefined: "Ошибка: параметр '%{name}' не указан"
+      unauthorized: "401 - Не авторизован"
+      file:
+        not_exist: "Файл '%{file}' не существует"
+      number:
+        invalid: "Неверный номер"
+      list:
+        empty: "%{name} список пуст"
+  output:
+    table_header:
+      api_version: "Версия API"
+      number: "Номер"
+      id: "Id"
+      name: "Имя"
+      provider: "Провайдер"
+      remote_user: "Пользователь"
+      disk: "Диск"
+      virtual_cpus: "Виртуальные ЦПУ"
+      ram: "RAM"
+      image_id: "Id образа"
+      protocol: "Протокол"
+      from: "Из"
+      to: "В"
+      cidr: "CIDR"
+      description: "Описание"
+      status: "Статус"
+      template: "Шаблон"
+      scope: "Область"
+      subnet: "Подсеть"
+      vpc_id: "VPC Id"
+      zone: "Зона"
+      deploy_env: "Окружение"
+      node_name: "Имя ноды"
+      image: "Образ"
+      flavor: "Конфигурация"
+      group: "Группы"
+      key: "Ключи"
+      templates: "Шаблоны"
+      run_list: "Список запуска"
+      groups: "Группы безоп."
+      subnets: "Подсети"
+      users: "Пользователи"
+      server: "Сервер"
+      project: "Проект"
+      script: "Скрипт"
+      network: "Сеть"
+      filter: "Филтер"
+      creation: "Создание"
+      bootatrap: "Бутстрап"
+      deletion: "Удаление"
+      instance_id: "Id объекта"
+      subproject: "Подпроект"
+      node_number: "Номер ноды"
+      tag: "Тэг"
+      privileges: "Привилегии"
+      email: "E-mail"
+      state: "Состояние"
+      public_ip: "Публичный IP"
+      private_ip: "Приватный IP"
+      dns: "DNS"
+      keypair: "Ключ"
+      created_at: "Создан"
+      created_by: "Создал"
+    title:
+      flavor:
+        list: "Конфигурации"
+      bootstrap_template:
+        list: "Шаблоны"
+      filter:
+        list: "Фильтры"
+      group:
+        list: "Группы безопасности"
+      image:
+        list: "Образы"
+        show: "Информация об образе '%{id}'"
+      key:
+        list: "Ключи"
+      network:
+        list: "Сети"
+      project:
+        list: "Проекты"
+        show: "Информация о проекте '%{name}'"
+        servers: "Сервера проекта '%{title}'"
+        test: "Тестирование проекта: %{project} - %{env}"
+      provider:
+        list: "Провайдеры"
+      script:
+        list: "Скрипты"
+      server:
+        list: "Сервера"
+        chef: "Сервера Chef"
+        ec2: "Сервера Ec2"
+        openstack: "Сервера Openstack"
+        show: "Сервер '%{name}'"
+      tag:
+        list: "Теги"
+      users:
+        list: "Пользователи"
+    not_found:
+      flavor:
+        list: "Ни одной конфигурации не найдено"
+      bootstrap_template:
+        list: "Ни одного шаблона не найдено"
+      filter:
+        list: "Ни одного фильтра не найдено"
+      group:
+        list: "Ни одной группы безопасности не найдено"
+      image:
+        list: "Ни одного образа не найдено"
+      key:
+        list: "Ни одного ключа не найдено"
+      network:
+        list: "Ни одной сети не найдено"
+      project:
+        list: "Ни одного проекта не найдено"
+        servers: "Ни одного сервера для проекта '%{name}' не найдено"
+      provider:
+        list: "Ни одного провайдера не найдено"
+      script:
+        list: "Не загружено ни одного скрипта"
+      server:
+        list: "Ни одного сервера не найдено"
+      tag:
+        list: "Ни одного тега не найдено"
+      user:
+        list: "Ни одного пользователя не найдено"
+  options:
+    usage: "Использование: %{cmd} команда [опции]"
+    commands: "Команды"
+    options: "Опции"
+    common_options: "Общие опции"
+    common:
+      help: "Показать помощь"
+      confirmation: "Ответить 'да' на все вопросы"
+      config: "Указать конфигурационный файл для devops клиента (%{file})"
+      version: "Версия devops клиента"
+      host: "Адрес хоста devops сервера (%{host})"
+      api: "Версия API devops сервера (%{api})"
+      username: "Имя пользователя devops (%{username})"
+      format: "Формат вывода: '%{formats}' (%{format})"
+      completion: "Инициализировать bash скрипт автодополнений"
+    project:
+      header: "Проект"
+      create:
+        groups: "Группы безопасности (список разделенный запятой)"
+        deploy_env: "Идентификатор окружения"
+        file: "Файл в формате JSON, содержащий настройки проекта"
+        subnets: "Идентификаторы подсетей для окружения (ec2 - только одна подсеть, openstack - список разделенный запятой)"
+        flavor: "Указать flavor для окружения проекта"
+        image: "Указать идентификатор образа для окружения проекта"
+        run_list: "Дополнительные рецепты и роли (разделенный запятой), например recipe[mycookbook::myrecipe],role[myrole]"
+        users: "Список пользователей (разделенный запятой) для управления окружением проекта"
+        provider: "Провайдер - 'ec2' или 'openstack'"
+        no_expires: "Без времени жизни"
+        expires: "Время жизни (5m, 3h, 2d, 1w, etc)"
+      user_add:
+        deploy_env: "Добавить пользователя к окружению проекта"
+      user_delete:
+        deploy_env: "Удалить пользователя из окружения проекта"
+      deploy:
+        servers: "Список серверов (разделенный запятой) для деплоя"
+    script:
+      run:
+        params: "Аргументы скрипта (список разделенный запятой)"

@@ -1,0 +1,4 @@
+class DevopsException < StandardError
+
+end
+

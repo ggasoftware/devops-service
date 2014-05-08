@@ -1,0 +1,3 @@
+class InvalidPrivileges < Exception
+
+end

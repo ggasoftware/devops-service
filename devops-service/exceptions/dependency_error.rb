@@ -1,0 +1,3 @@
+class DependencyError < Exception
+
+end

@@ -1,0 +1,14 @@
+source 'https://rubygems.org'
+
+gem "thin", "~>1.5.1"
+gem "mime-types", "~>1.25.1"
+gem "sinatra", "1.4.3"
+gem "sinatra-contrib", "1.4.1"
+gem "sinatra-websocket", "~>0.3.0"
+gem "fog", "~>1.20"
+gem "mixlib-shellout"
+gem "chef", ">=11"
+gem "mongo"
+gem "bson_ext"
+gem "multi_json"
+gem "rufus-scheduler", "2.0.24"
