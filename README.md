@@ -1,4 +1,4 @@
-# Devops services#
+# Devops service#
 
 Copyright (c) 2009-2014 GGA Software Services LLC
 
