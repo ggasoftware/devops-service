@@ -125,13 +125,20 @@ puts list[0].inspect
             else
               out << "\nERROR: Bad request (400): #{response['badRequest']['message']}"
             end
+            out << "\n"
             return false
           else
             out << "\nERROR: Unknown server error (#{response['badRequest']['code']}): #{response['badRequest']['message']}"
+            out << "\n"
             return false
           end
+        rescue Excon::Errors::InternalServerError => ise
+          out << "\nError: openstack internal server error " + ise.message
+          out << "\n"
+          return false
         rescue => e2
-          out << "Error: Unknown error: " + e.message
+          out << "\nError: Unknown error: " + e2.message
+          out << "\n"
           return false
         end
         sbody = o_server.body
