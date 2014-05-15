@@ -7,7 +7,7 @@ en:
       parameter: "Wrong config file parameter: -c file"
     property:
       lang: "Language (%{langs})"
-      host: "Devops server host and port"
+      host: "Devops server host and port (host:port)"
       api: "API version"
       username: "Username"
       password: "Password"

@@ -7,7 +7,7 @@ ru:
       parameter: "Неверный параметр конфигурационного файла: -c file"
     property:
       lang: "Язык (%{langs})"
-      host: "Адрес и порт сервера Devops"
+      host: "Адрес и порт сервера Devops (host:port)"
       api: "Версия API"
       username: "Имя пользователя"
       password: "Пароль"

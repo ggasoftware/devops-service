@@ -3,6 +3,7 @@
 	<meta charset="utf-8"/>
 	<meta name="author" content="Anton Martynov">
 	<meta name="author" content="Mike Miroliubov">
+	<meta name="author" content="Alexey Lukashin">
 	<title>Devops клиент</title>
 </head>
 
