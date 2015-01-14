@@ -65,7 +65,7 @@ class DeployEnvMulti < MongoModel
             end
           end
 
-          p = ::Version2_0::Provider::ProviderFactory.get(server["provider"])
+          p = ::Provider::ProviderFactory.get(server["provider"])
           check_flavor!(p, server["flavor"])
           check_image!(p, server["image"])
           check_subnets_and_groups!(p, server["subnets"], server["groups"])

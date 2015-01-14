@@ -9,7 +9,8 @@ class User < MongoModel
   ROOT_USER_NAME = 'root'
   ROOT_PASSWORD = ''
 
-  PRIVILEGES = ["r", "w", "rw", ""]
+  PRIVILEGES = ["r", "w", "x"]
+  PRIVILEGES_REGEX = /^r?w?x?$/
 
   attr_accessor :id, :password, :privileges, :email
   types :id => {:type => String, :empty => false},
@@ -24,7 +25,7 @@ class User < MongoModel
   end
 
   def all_privileges
-    privileges_with_value("rw")
+    privileges_with_value("rwx")
   end
 
   def default_privileges
@@ -32,8 +33,10 @@ class User < MongoModel
   end
 
   def grant cmd, priv=''
-    raise InvalidCommand.new "Invalid privileges '#{priv}'. Available values are '#{PRIVILEGES.join("', '")}'" unless PRIVILEGES.include?(priv)
-    raise InvalidCommand.new "Can't grant privileges to root" if self.id == ROOT_USER_NAME
+    if !priv.empty? and PRIVILEGES_REGEX.match(priv).to_s.empty?
+      raise InvalidCommand.new "Invalid privileges '#{priv}'. Available values are '#{PRIVILEGES.join("', '")}'"
+    end
+    raise InvalidPrivileges.new "Can't grant privileges to root" if self.id == ROOT_USER_NAME
 
     case cmd
     when "all"
@@ -73,6 +76,7 @@ class User < MongoModel
     return p.include?(priv)
   end
 
+=begin
   def check_privilege_read cmd
     check_privilege_r_w cmd, "r"
   end
@@ -86,6 +90,7 @@ class User < MongoModel
     return false if p.nil?
     return p == flag || p == 'rw'
   end
+=end
 
   def self.create_root
     root = User.new({'username' => ROOT_USER_NAME, 'password' => ROOT_PASSWORD})

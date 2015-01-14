@@ -1,0 +1,26 @@
+@project @deploy_env
+Feature: Delete deploy env
+
+  @static
+  <% project_name = @config["static"]["project"]["name"] %>
+  Scenario: Delete deploy env of project <%= project_name %>
+    When I send PUT '/v2.0/project/<%= project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        // Remove created deploy_envs, leave only the first one (precreated).
+        {
+          "identifier": "test",
+          "run_list": [],
+          "expires": null,
+          "provider": "static",
+          "users": [
+            "test"
+          ]
+        }
+      ],
+      "name": "<%= project_name %>"
+    }
+    """
+    Then response should be '200'
+

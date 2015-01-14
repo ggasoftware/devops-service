@@ -1,0 +1,40 @@
+<h2>Create new image</h2>
+<div>
+  <form action='image' class='well form' id='create-image-form' method='post'>
+    <div class='btn-group'>
+      <a class='btn dropdown-toggle dropdownProviders' data-toggle='dropdown' href='list' id='select-btn'>
+        Provider
+        <span class='caret'></span>
+      </a>
+      <ul class='dropdown-menu'>
+        {{#each providers}}
+          <li>
+            <a class='selectProvider' href='javascript:void(0)' value="{{id}}" >{{id}}</a>
+          </li>
+        {{/each}}
+      </ul>
+    </div> <!--btn-group-->
+
+    <div class='btn-group'>
+      <a class='btn dropdown-toggle dropdownImages' data-toggle='dropdown' href='list' id='select-btn'>
+        Available images
+        <span class='caret'></span>
+      </a>
+      <ul class='dropdown-menu'>
+        {{#each images}}
+          <li>
+            <a class='selectImage' href='javascript:void(0)' value="{{attributes.image_id}}">{{attributes.image_id}}</a>
+          </li>
+        {{/each}}
+      </ul>
+    </div> <!--btn-group-->
+    <br>
+    <br>
+    <input id='name-input' name='name' placeholder='Image name' type='text'>
+    <br>
+    <input name='remote_user' placeholder='SSH username' type='text'>
+    <br>
+    <br>
+    <button class='btn btn-success createImage' type='button'>Create</button>
+  </form>
+</div> <!--main div-->

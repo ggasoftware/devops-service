@@ -1,0 +1,80 @@
+@project
+Feature: create project
+
+  @openstack
+  Scenario: Create project <%= @config["openstack"]["project"]["name"] %>
+    When I send POST '/v2.0/project' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        {
+          "identifier": "<%= @config["openstack"]["project"]["env"] %>",
+          "run_list": [],
+          "expires": null,
+          "provider": "openstack",
+          "users": [
+            "<%= @config["username"] %>"
+          ],
+          "flavor": "<%= @config["openstack"]["flavor"] %>",
+          "image": "<%= @config["openstack"]["image"] %>",
+          "subnets": [
+            "private"
+          ],
+          "groups": [
+            "default"
+          ]
+        }
+      ],
+      "name": "<%= @config["openstack"]["project"]["name"] %>"
+    }
+    """
+    Then response should be '201'
+
+  @ec2
+  Scenario: Create project <%= @config["ec2"]["project"]["name"] %>
+    When I send POST '/v2.0/project' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        {
+          "identifier": "<%= @config["ec2"]["project"]["env"] %>",
+          "run_list": [],
+          "expires": null,
+          "provider": "ec2",
+          "users": [
+            "<%= @config["username"] %>"
+          ],
+          "flavor": "<%= @config["ec2"]["flavor"] %>",
+          "image": "<%= @config["ec2"]["image"] %>",
+          "subnets": [],
+          "groups": [
+            "default"
+          ]
+        }
+      ],
+      "name": "<%= @config["ec2"]["project"]["name"] %>"
+    }
+    """
+    Then response should be '201'
+
+
+  @static
+  Scenario: Create project <%= @config["static"]["project"]["name"] %>
+    When I send POST '/v2.0/project' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        {
+          "identifier": "<%= @config["static"]["project"]["env"] %>",
+          "run_list": [],
+          "expires": null,
+          "provider": "static",
+          "users": [
+            "<%= @config["username"] %>"
+          ]
+        }
+      ],
+      "name": "<%= @config["static"]["project"]["name"] %>"
+    }
+    """
+    Then response should be '201'

@@ -1,3 +1,4 @@
+# encoding: UTF-8
 ru:
   config:
     invalid:
@@ -8,6 +9,7 @@ ru:
     property:
       lang: "Язык (%{langs})"
       host: "Адрес и порт сервера Devops (host:port)"
+      prefix: "Префикс пути"
       api: "Версия API"
       username: "Имя пользователя"
       password: "Пароль"
@@ -49,6 +51,7 @@ ru:
       create:
         ssh_user: "Имя пользоватлея ssh"
         template: "Шаблон загрузки или пустое значение"
+        template_empty: "Нет ни одного шаблона загрузки, будет использован шаблон по умолчанию"
     filter:
       question:
         delete: "Вы уверены, что хотите удалить фильтр(ы) образа '%{name}'?"
@@ -240,6 +243,7 @@ ru:
       version: "Версия devops клиента"
       host: "Адрес хоста devops сервера (%{host})"
       api: "Версия API devops сервера (%{api})"
+      prefix: "Префикс пути devops сервера (%{prefix})"
       username: "Имя пользователя devops (%{username})"
       format: "Формат вывода: '%{formats}' (%{format})"
       completion: "Инициализировать bash скрипт автодополнений"

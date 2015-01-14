@@ -11,6 +11,7 @@ require "routes/v2.0/provider"
 require "routes/v2.0/tag"
 require "routes/v2.0/server"
 require "routes/v2.0/script"
+require "routes/v2.0/status"
 require "routes/v2.0/bootstrap_templates"
 
 module Version2_0
@@ -20,7 +21,7 @@ module Version2_0
     def initialize app
       stack = Rack::Builder.new
       [FlavorRoutes, ImageRoutes, FilterRoutes, NetworkRoutes, GroupRoutes, DeployRoutes,
-       ProjectRoutes, KeyRoutes, UserRoutes, ProviderRoutes, TagRoutes, ServerRoutes, ScriptRoutes, BootstrapTemplatesRoutes].each do |m|
+       ProjectRoutes, KeyRoutes, UserRoutes, ProviderRoutes, TagRoutes, ServerRoutes, ScriptRoutes, BootstrapTemplatesRoutes, StatusRoutes].each do |m|
         stack.use m
       end
       stack.run app

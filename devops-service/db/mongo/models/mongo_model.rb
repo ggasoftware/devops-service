@@ -43,7 +43,7 @@ class MongoModel
   end
 
   def check_provider provider=self.provider
-    unless ::Version2_0::Provider::ProviderFactory.providers.include?(provider) or provider == "static"
+    unless ::Provider::ProviderFactory.providers.include?(provider)
       raise InvalidRecord.new "Invalid provider '#{provider}'"
     end
   end

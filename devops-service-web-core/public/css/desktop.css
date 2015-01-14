@@ -1,0 +1,22 @@
+@import url("../env/css/env-main.css");
+@import url("../env/css/sig-jquery-ui-theme.css");
+
+.cpointer {
+  cursor: pointer;
+}
+
+.report-link-wrapped {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alert-message {
+  position: fixed;
+  margin: 0 auto;
+  top: 0px;
+  left: 0;
+  right: 0;
+  z-index: 7000;
+}

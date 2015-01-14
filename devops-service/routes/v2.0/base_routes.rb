@@ -27,10 +27,7 @@ module Version2_0
         halt(rstatus, json(obj))
       end
 
-      def check_privileges cmd, p=nil
-        if p != "r" and p != "w"
-          p = request.get? ? "r" : "w"
-        end
+      def check_privileges cmd, p
         BaseRoutes.mongo.check_user_privileges(request.env['REMOTE_USER'], cmd, p)
       end
 
@@ -68,7 +65,7 @@ module Version2_0
       end
 
       def check_provider provider
-        list = ::Version2_0::Provider::ProviderFactory.providers
+        list = ::Provider::ProviderFactory.providers
         halt_response("Invalid provider '#{provider}', available providers: '#{list.join("', '")}'", 404) unless list.include?(provider)
       end
 

@@ -1,0 +1,23 @@
+!!! 5
+%html{:lang => "en"}
+  %head
+    %meta{'charset' => 'utf-8'}/
+    %meta{'http-equiv' => 'X-UA-Compatible', 'content' => 'IE=edge, chrome=1'}/
+    %link{:rel => 'stylesheet', :href => 'env/css/bootstrap.css'}
+    %link{:rel => 'stylesheet', :href => 'env/css/signin.css'}
+    %title Devops Service
+    / CSS
+    %script{:type => "text/javascript", :src => 'js/libs/jquery.js'}
+    %script{:type => "text/javascript", :src => 'env/lib/bootstrap.js'}
+  %body
+    .container
+      .content
+        .login-box
+          %form{:class => "form-signin", :action => "/login", :method => "post", :align => "center"}
+            %div{:align => "center"}
+              %h2="Devops Service"
+              %br
+            %input{:autofocus => "autofocus", :class => "form-control text top", :type => "text", :placeholder => "Username", :name => "username", :id => "username" }
+            %input{:class => "form-control text bottom", :type => "password", :placeholder => "Password", :name => "password", :id => "password" }
+            .centered
+              %button{:class => "btn btn-lg btn-primary btn-block ", :type => "submit"} Login

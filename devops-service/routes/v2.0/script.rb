@@ -57,7 +57,7 @@ module Version2_0
     #
     # * *Returns* : text stream
     post "/script/command/:node_name" do
-      check_privileges("script", "w")
+      check_privileges("script", "x")
       user = request.env['REMOTE_USER']
       s = BaseRoutes.mongo.server_by_chef_node_name params[:node_name]
       BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, user
@@ -96,7 +96,7 @@ module Version2_0
     # * *Returns* : text stream
     post "/script/run/:script_name" do
       check_headers :content_type
-      check_privileges("script", "w")
+      check_privileges("script", "x")
       file_name = params[:script_name]
       @file = File.join(DevopsService.config[:scripts_dir], check_filename(file_name, "Parameter 'script_name' must be a not empty string", false))
       halt(404, "File '#{file_name}' does not exist") unless File.exists?(@file)

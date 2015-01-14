@@ -1,0 +1,23 @@
+<td>{{chef_node_name}}</td>
+<td>{{modal.created_by}}</td>
+<td>{{modal.private_ip}}</td>
+<td>{{modal.id}}</td>
+<td>
+ <div class="btn-group" role="group">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+      Actions
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+      <li><a id="deploy-server" style="cursor:pointer;">Deploy</a></li>
+      <li><a id="reserve-server" style="cursor:pointer;">Reserve</a></li>
+      <li><a id="unreserve-server" style="cursor:pointer;">Unreserve</a></li>
+      {{#if accessLevels.level3}}
+      <li><a id="pause-server" style="cursor:pointer;">Pause</a></li>
+      <li><a id="unpause-server" style="cursor:pointer;">Unpause</a></li>
+      {{/if}}
+      <li><a id="delete-server" style="cursor:pointer;">Delete</a></li>
+    </ul>
+  </div>
+</td>
+

@@ -1,0 +1,55 @@
+<div class="panel panel-default">
+  <div class="panel-heading">  <h4 class="panel-title">{{identifier}}</h4></div>
+
+  <div class="panel-body">
+
+    <div class="col-lg-3">
+      <ul>
+        <li><b>Provider:</b> {{provider}}</li>
+        <li><b>Chef env:</b> {{chef_env}}</li>
+        <li><b>Flavor:</b> {{flavor}}</li>
+        <li><b>Run list:</b> {{run_list}}</li>
+        <li><b>Expires:</b> {{expires}}</li>
+        <li style="word-wrap:break-word; white-space: pre-wrap;"><b>Users:</b> {{usersWrapped}}</li>
+      </ul>
+    </div>
+
+    <div class="col-lg-9">
+      <table class="table table-hover table-bordered">
+      <thead>
+        <tr>
+          <th>Node name</th>
+          <th>Launched by</th>
+          <th>Private IP</th>
+          <th>Instance ID</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id='servers-container'></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="panel-footer">
+      <div class="btn-group">
+        <button class='btn btn-default' id="create-server" value="{{this.identifier}}">
+          <span class="glyphicon glyphicon-plus-sign"></span>
+          <small>Launch node</small>
+        </button>
+
+        {{#if accessLevels.level2}}
+        <button class='btn btn-default' id="bootstrap-server" value="{{this.identifier}}">
+          <span class="glyphicon glyphicon-plus-sign"></span>
+          <small>Bootstrap server</small>
+        </button>
+        {{/if}}
+
+        <button class='btn btn-default' id="deploy-env" value="{{this.identifier}}">
+          <span class="glyphicon glyphicon-cloud-upload"></span>
+          <small>Deploy</small>
+        </button>
+      </div>
+  </div >
+  </div>
+</div>

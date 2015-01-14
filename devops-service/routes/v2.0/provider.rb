@@ -26,7 +26,7 @@ module Version2_0
     get "/providers" do
       check_headers :accept
       check_privileges("provider", "r")
-      json ::Version2_0::Provider::ProviderFactory.providers
+      json ::Provider::ProviderFactory.providers
     end
 
   end

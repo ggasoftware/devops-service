@@ -1,0 +1,17 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3 class="modal-title">Deploy server {{chef_node_name}}<small></small></h3>
+    </div><!--modal-header-->
+    <div class="modal-body">
+      <p>You're going to deploy server <strong>{{chef_node_name}}</strong></p>
+      <p>Please click <strong>'Deploy'</strong> to proceed.</p>
+      <div class="alert" id="result-label"> </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-default" id="deploy">Deploy</button>
+    </div>
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

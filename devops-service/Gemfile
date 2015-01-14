@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+ruby "2.0.0"
+
 gem "thin", "~>1.5.1"
 gem "mime-types", "~>1.25.1"
 gem "sinatra", "1.4.3"
@@ -10,5 +12,13 @@ gem "mixlib-shellout"
 gem "chef", ">=11"
 gem "mongo"
 gem "bson_ext"
-gem "multi_json"
+gem "multi_json", "1.7.8"
 gem "rufus-scheduler", "2.0.24"
+gem "sidekiq", "3.2.6"
+
+
+group :test do
+  gem 'cucumber'
+  gem 'test-unit'
+  gem 'httpclient'
+end

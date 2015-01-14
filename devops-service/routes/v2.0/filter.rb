@@ -14,6 +14,7 @@ module Version2_0
       check_provider(params[:provider])
       @images = create_object_from_json_body(Array)
       halt_response("Request body should not be an empty array") if @images.empty?
+      check_array(@images, "Request body should contains an array with strings")
     end
 
     after "/filter/:provider/image" do

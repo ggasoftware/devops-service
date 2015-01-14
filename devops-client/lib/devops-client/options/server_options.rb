@@ -2,19 +2,21 @@ require "devops-client/options/common_options"
 
 class ServerOptions < CommonOptions
 
-  commands :add, :bootstrap, :create, :delete, :list, :pause, :show, :unpause # :sync,
+  commands :add, :bootstrap, :create, :delete, :list, :pause, :reserve, :show, :unpause, :unreserve # :sync,
 
   def initialize args, def_options
     super(args, def_options)
     self.header = I18n.t("headers.server")
     self.banner_header = "server"
-    self.list_params = ["[chef|ec2|openstack]"]
+    self.list_params = ["[chef|ec2|openstack|static]"]
     self.create_params = ["PROJECT_ID", "DEPLOY_ENV"]
     node_params = ["NODE_NAME"]
     self.delete_params = node_params
     self.show_params = node_params
     self.pause_params = node_params
     self.unpause_params = node_params
+    self.reserve_params = node_params
+    self.unreserve_params = node_params
     self.bootstrap_params = ["INSTANCE_ID"]
     self.add_params = ["PROJECT_ID", "DEPLOY_ENV", "IP", "SSH_USER", "KEY_ID"]
   end
@@ -30,6 +32,46 @@ class ServerOptions < CommonOptions
       options[:no_ask] = false
       opts.on("--no_ask", "Don't ask for permission for server deletion") do
         options[:no_ask] = true
+      end
+    end
+  end
+
+  def pause_options
+    options do |opts, options|
+      opts.banner << self.delete_banner
+      options[:key] = "node"
+      opts.on('--instance', "Pause server by instance id") do
+        options[:key] = "instance"
+      end
+    end
+  end
+
+  def unpause_options
+    options do |opts, options|
+      opts.banner << self.delete_banner
+      options[:key] = "node"
+      opts.on('--instance', "Unpause server by instance id") do
+        options[:key] = "instance"
+      end
+    end
+  end
+
+  def reserve_options
+    options do |opts, options|
+      opts.banner << self.delete_banner
+      options[:key] = "node"
+      opts.on('--instance', "Reserve server by instance id") do
+        options[:key] = "instance"
+      end
+    end
+  end
+
+  def unreserve_options
+    options do |opts, options|
+      opts.banner << self.delete_banner
+      options[:key] = "node"
+      opts.on('--instance', "Unreserve server by instance id") do
+        options[:key] = "instance"
       end
     end
   end

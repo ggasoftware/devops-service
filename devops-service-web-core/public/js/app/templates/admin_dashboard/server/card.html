@@ -1,0 +1,20 @@
+<h2>{{chef_node_name}}</h2>
+  <ul>
+    <li>Provider: {{modal.provider}}</li>
+    <li>Chef node name: {{modal.chef_node_name}}</li>
+    <li>Project: {{modal.project}}</li>
+    <li>Deploy env: {{modal.deploy_env}}</li>
+    <li>Private ip: {{modal.private_ip}}</li>
+    <li>Public ip: {{modal.public_ip}}</li>
+    <li>Created at: {{modal.created_at}}</li>
+    <li>Created by: {{modal.created_by}}</li>
+    <li>Static: {{modal.static}}</li>
+    <li>Key: {{modal.key}}</li>
+  </ul>
+<button class='btn pause'>Pause</button>
+<button class='btn unpause'>Unpause</button>
+<button class='btn btn-success deployServer'>Deploy</button>
+<button class='btn btn-danger delete-button' method='delete' type='submit'>Delete</button>
+
+<br>
+<a href="#admin/servers" class='js-back'>Back</a>

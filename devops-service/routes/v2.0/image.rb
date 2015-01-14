@@ -12,15 +12,6 @@ module Version2_0
       puts "Image routes initialized"
     end
 
-    before "/image/:image_id" do
-      if request.get? or request.delete?
-        check_headers :accept
-      else
-        check_headers
-      end
-      check_privileges("image")
-    end
-
     after %r{\A/image(/[\w]+)?\z} do
       statistic
     end
@@ -99,6 +90,8 @@ module Version2_0
     #     "id": "36dc7618-4178-4e29-be43-286fbfe90f50"
     #   }
     get "/image/:image_id" do
+      check_headers :accept
+      check_privileges("image", "r")
       json BaseRoutes.mongo.image(params[:image_id])
     end
 
@@ -147,11 +140,13 @@ module Version2_0
     # * *Returns* :
     #   200 - Updated
     put "/image/:image_id" do
+      check_headers
+      check_privileges("image", "w")
       BaseRoutes.mongo.image params[:image_id]
       image = Image.new(create_object_from_json_body)
       image.id = params[:image_id]
       BaseRoutes.mongo.image_update image
-      create_response("Image '#{params[:image_id]}' updated")
+      create_response("Image '#{params[:image_id]}' has been updated")
     end
 
     # Delete devops image
@@ -164,6 +159,8 @@ module Version2_0
     # * *Returns* :
     #   200 - Deleted
     delete "/image/:image_id" do
+      check_headers
+      check_privileges("image", "w")
       projects = BaseRoutes.mongo.projects_by_image params[:image_id]
       unless projects.empty?
         ar = []
@@ -174,7 +171,7 @@ module Version2_0
       end
 
       r = BaseRoutes.mongo.image_delete params[:image_id]
-      create_response("Image '#{params[:image_id]}' removed")
+      create_response("Image '#{params[:image_id]}' has been removed")
     end
 
   end

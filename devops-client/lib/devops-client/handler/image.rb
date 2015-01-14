@@ -47,7 +47,9 @@ class Image < Handler
   def get_templates
     bt = BootstrapTemplates.new(@host, self.options)
     bt.auth = self.auth
-    return bt.list_handler(["templates", "list"]), bt.table
+    list = bt.list_handler(["templates", "list"])
+    return list, nil if list.empty?
+    return list, bt.table
   end
 
   def create_handler
@@ -74,11 +76,16 @@ class Image < Handler
 
     q["bootstrap_template"] = if options[:bootstrap_template].nil? and options[:no_bootstrap_template] == false
       bt, bt_t = get_templates
-      i = choose_number_from_list(I18n.t("handler.image.create.template"), bt, bt_t, -1)
-      if i == -1
+      if bt.empty?
+        puts I18n.t("handler.image.create.template_empty")
         nil
       else
-        bt[i]
+        i = choose_number_from_list(I18n.t("handler.image.create.template"), bt, bt_t, -1)
+        if i == -1
+          nil
+        else
+          bt[i]
+        end
       end
     else
       nil

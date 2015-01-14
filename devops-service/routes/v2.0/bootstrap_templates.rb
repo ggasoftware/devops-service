@@ -1,9 +1,12 @@
 require "json"
 require "routes/v2.0/base_routes"
 require "providers/provider_factory"
+require "commands/bootstrap_templates"
 
 module Version2_0
   class BootstrapTemplatesRoutes < BaseRoutes
+
+    include BootstrapTemplatesCommands
 
     def initialize wrapper
       super wrapper
@@ -24,9 +27,7 @@ module Version2_0
     get "/templates" do
       check_headers :accept
       check_privileges("templates", "r")
-      res = []
-      Dir.foreach("#{ENV["HOME"]}/.chef/bootstrap/") {|f| res.push(f[0..-5]) if f.end_with?(".erb")} if File.exists? "#{ENV["HOME"]}/.chef/bootstrap/"
-      json res
+      json get_templates
     end
 
   end

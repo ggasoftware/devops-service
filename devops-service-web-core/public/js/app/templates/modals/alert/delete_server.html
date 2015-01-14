@@ -1,0 +1,19 @@
+<div class="modal-dialog">
+  <div class="alert alert-danger">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Delete server </h3>
+    <h4>You're about to delete server <b>{{chef_node_name}}</b>. Are you sure?</h4>
+
+    <div class="checkbox">
+      <label>
+        <input id="remove-by-instance-id" type="checkbox">Remove by instance ID
+      </label>
+    </div>
+
+    <p>
+      <button type="button" class="btn btn-danger" id="execute" data-loading-text="Please wait...">Delete</button>
+      <button type="button" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    </p>
+  </div>
+  <!--alert-->
+</div><!-- /.modal-dialog -->

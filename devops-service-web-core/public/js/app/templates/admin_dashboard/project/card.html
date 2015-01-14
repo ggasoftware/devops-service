@@ -1,0 +1,35 @@
+<h2>{{id}}</h2>
+<table class="text-center table table-condensed table-striped table-bordered table-hover">
+  <thead>
+    <th>Env</th>
+    <th>Image</th>
+    <th>Flavor</th>
+    <th>Run list</th>
+    <th>Security groups</th>
+    <th>Subnets</th>
+    <th>Expires after</th>
+    <th>Provider</th>
+    <th></th>
+  </thead>
+  <tbody>
+    {{#each deploy_envs_helper}}
+      <tr>
+        <td>{{identifier}}</td>
+        <td>{{image}}</td>
+        <td>{{flavor}}</td>
+        <td>{{run_list}}</td>
+        <td>{{groups}}</td>
+        <td>{{subnets}}</td>
+        <td>{{expires}}</td>
+        <td>{{provider}}</td>
+        <td>
+          <button class='btn btn-success createServer' value="{{this.identifier}}">Create</button>
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+<button class='btn btn-danger delete-button' method='delete' type='submit'>Delete</button>
+
+<br>
+<a href="#admin/projects" class='js-back'>Back</a>

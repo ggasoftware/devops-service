@@ -1,0 +1,107 @@
+openstack:
+  valid: &valid
+    identifier: test
+    run_list: []
+    expires:
+    provider: openstack
+    users: ['test']
+    flavor: test_flavor
+    image: test_image
+    subnets: ['test_network']
+  valid_double:
+    <<: *valid
+    identifier: test2
+  invalid:
+    base: &invalid_base
+      <<: *valid
+      identifier: test2
+    run_list:
+      <<: *invalid_base
+      run_list: ['wrong_role']
+    expires:
+      <<: *invalid_base
+      expires: 10_wrong
+    users:
+      <<: *invalid_base
+      users: [ 'non_existing_user' ]
+    flavor:
+      <<: *invalid_base
+      flavor: wrong_flavor
+    image:
+      <<: *invalid_base
+      image: wrong_image
+    subnets_empty:
+      <<: *invalid_base
+      subnets:
+    subnets_invalid:
+      <<: *invalid_base
+      subnets: ['wrong_subnet']
+    groups:
+      <<: *invalid_base
+      groups: ['wrong_group']
+
+ec2:
+  valid: &valid
+    identifier: test
+    run_list: []
+    expires:
+    provider: ec2
+    users: ['test']
+    flavor: test_flavor
+    image: test_image_ec2
+    subnets: ['test_network_id']
+  valid_double:
+    <<: *valid
+    identifier: test2
+  invalid:
+    base: &invalid_base
+      <<: *valid
+      identifier: test2
+    run_list:
+      <<: *invalid_base
+      run_list: ['wrong_role']
+    expires:
+      <<: *invalid_base
+      expires: 10_wrong
+    users:
+      <<: *invalid_base
+      users: [ 'non_existing_user' ]
+    flavor:
+      <<: *invalid_base
+      flavor: wrong_flavor
+    image:
+      <<: *invalid_base
+      image: wrong_image
+    subnets_empty:
+      <<: *invalid_base
+      subnets:
+    subnets_invalid:
+      <<: *invalid_base
+      subnets: ['wrong_subnet']
+    groups:
+      <<: *invalid_base
+      groups: ['wrong_group']
+
+static:
+  valid: &valid
+    identifier: test
+    run_list: []
+    expires:
+    provider: static
+    users: [ 'test' ]
+  valid_double:
+    <<: *valid
+    identifier: test2
+  invalid:
+    base: &invalid_base
+      <<: *valid
+      identifier: test2
+    run_list:
+      <<: *invalid_base
+      run_list: ['wrong_role']
+    expires:
+      <<: *invalid_base
+      expires: '10_wrong'
+    users:
+      <<: *invalid_base
+      users: [ 'non_existing_user' ]

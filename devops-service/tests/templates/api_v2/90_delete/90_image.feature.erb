@@ -1,0 +1,52 @@
+@image @project
+Feature: delete image
+
+  @openstack
+  Scenario: Delete openstack image with user without privileges
+    When I send DELETE '/v2.0/image/<%= @config["openstack"]["image"] %>' query with user without privileges
+    Then response should be '401'
+
+  @openstack
+  Scenario: Delete openstack image without header 'Accept'
+    When I send DELETE '/v2.0/image/<%= @config["openstack"]["image"] %>' query without header 'Accept'
+    Then response should be '406'
+
+  @openstack
+  Scenario: Delete openstack image
+    When I send DELETE '/v2.0/image/<%= @config["openstack"]["image"] %>' query
+    Then response should be '200'
+    And the Content-Type header should include 'application/json'
+    And the JSON response should be an object
+    And response should be JSON object like:
+    """
+    {
+      "message" : "Image '<%= @config["openstack"]["image"] %>' has been removed"
+    }
+    """
+
+  @ec2
+  Scenario: Delete ec2 image with user without privileges
+    When I send DELETE '/v2.0/image/<%= @config["ec2"]["image"] %>' query with user without privileges
+    Then response should be '401'
+
+  @ec2
+  Scenario: Delete ec2 image without header 'Accept'
+    When I send DELETE '/v2.0/image/<%= @config["ec2"]["image"] %>' query without header 'Accept'
+    Then response should be '406'
+
+  @ec2
+  Scenario: Delete ec2 image
+    When I send DELETE '/v2.0/image/<%= @config["ec2"]["image"] %>' query
+    Then response should be '200'
+    And the Content-Type header should include 'application/json'
+    And the JSON response should be an object
+    And response should be JSON object like:
+    """
+    {
+      "message" : "Image '<%= @config["ec2"]["image"] %>' has been removed"
+    }
+    """
+
+  Scenario: Delete unknown image
+    When I send DELETE '/v2.0/image/foo' query
+    Then response should be '404'

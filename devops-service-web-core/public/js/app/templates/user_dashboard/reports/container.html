@@ -1,0 +1,77 @@
+<!--<h3>Summary</h3>-->
+<!--<table class="table table-bordered table-condensed table-hover">-->
+<!--<thead>-->
+<!--<tr>-->
+<!--<th class="text-center">Failed</th>-->
+<!--<th class="text-center">Completed</th>-->
+<!--<th class="text-center">Running</th>-->
+<!--</tr>-->
+<!--</thead>-->
+<!--<tbody>-->
+<!--<tr>-->
+<!--<td class="danger text-center">{{summary.failed}}</td>-->
+<!--<td class="success text-center">{{summary.completed}}</td>-->
+<!--<td class="warning text-center">{{summary.running}}</td>-->
+<!--</tr>-->
+<!--</tbody>-->
+<!--</table>-->
+
+<div class="row">
+  <div class="col-md-5 pull-right">
+
+
+  </div>
+</div>
+
+  <br>
+<form class="form-inline">
+
+  <div class="form-group">
+    <input id="projects-filter" placeholder="Project name" type="text" class="form-control">
+  </div>
+
+  <div class="form-group">
+    <input id="env-filter" placeholder="Deploy environment" type="text" class="form-control">
+  </div>
+
+  <div class="form-group">
+    <input id="type-filter" placeholder="Report type" type="text" class="form-control">
+  </div>
+
+  <div class="form-group">
+    <input id="users-filter" placeholder="User name" type="text" class="form-control">
+  </div>
+
+  <div class="pull-right">
+
+    <label class="text-success cpointer">
+      <input id="filter-completed" type="checkbox" checked> Completed
+    </label> 
+
+    <label class="text-danger cpointer">
+      <input id="filter-failed" type="checkbox" checked> Failed
+    </label> 
+
+    <label class="text-warning cpointer">
+      <input id="filter-in-progress" type="checkbox" checked> In progress
+    </label> 
+
+  </div>
+
+</form>
+
+<br>
+
+<table class="table table-bordered table-condensed table-hover">
+  <thead>
+  <th>Project</th>
+  <th>Env</th>
+  <th>Type</th>
+  <th>User</th>
+  <th>Link</th>
+  <th>Date</th>
+  </thead>
+  <tbody id="reports-list">
+
+  </tbody>
+</table>

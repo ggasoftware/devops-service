@@ -1,0 +1,15 @@
+  <br>
+  <ul class="nav nav-pills">
+    <li><a id="project-info" class="cpointer"><i class="glyphicon glyphicon-info-sign"></i> Project JSON</a></li>
+
+    {{#if accessLevels.level3}}
+      <li><a id='deploy-project' class="cpointer"><i class="glyphicon glyphicon-cloud-upload"></i> Deploy project</a></li>
+    {{/if}}
+
+    {{#if accessLevels.level2}}
+      <li><a id="manage-environments" class="cpointer"><i class="glyphicon glyphicon-cog"></i> Manage environments</a></li>
+      <li><a id='manage-users' class="cpointer"><i class="glyphicon glyphicon-user"></i> Project users</a></li>
+      <li><a id='delete-project' class="cpointer"><i class="glyphicon glyphicon-trash"></i> Delete project</a></li>
+    {{/if}}
+
+  </ul>

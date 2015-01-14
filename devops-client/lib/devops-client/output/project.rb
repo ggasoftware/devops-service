@@ -50,7 +50,7 @@ module Output
     def json
       JSON.pretty_generate(case ARGV[1]
       when "list"
-        @list
+        @list.map {|l| l["name"]}
       when "show"
         @show
       when "servers"
@@ -63,7 +63,7 @@ module Output
   private
     def create_list list
       abort(I18n.t("output.not_found.project.list")) if list.empty?
-      rows = list.map {|l| [l]}
+      rows = list.map {|l| [l["name"]]}
       headers = [ I18n.t("output.table_header.id") ]
       return headers, rows
     end

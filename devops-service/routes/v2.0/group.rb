@@ -53,7 +53,7 @@ module Version2_0
       check_headers :accept
       check_privileges("group", "r")
       check_provider(params[:provider])
-      p = ::Version2_0::Provider::ProviderFactory.get params[:provider]
+      p = ::Provider::ProviderFactory.get params[:provider]
       json p.groups(params)
     end
 

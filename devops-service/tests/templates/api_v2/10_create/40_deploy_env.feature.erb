@@ -1,0 +1,337 @@
+@project @deploy_env
+Feature: Create deploy env
+
+  #---------------------
+  # OPENSTACK
+  #---------------------
+
+  <% openstack_project_name = @config["openstack"]["project"]["name"] %>
+  <% precreated_openstack_deploy_env = @formatter.json('deploy_env/openstack/valid', spaces: 8) %>
+  @openstack
+  Scenario: Send deploy env with invalid runlist for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= @formatter.json('deploy_env/openstack/valid', spaces: 8) %>,
+        <%= @formatter.json('deploy_env/openstack/invalid/run_list', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid run list elements: 'wrong_role'. Each element should be role or recipe."
+
+  @openstack
+  Scenario: Send deploy env with invalid expiration for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_openstack_deploy_env %>,
+        <%= @formatter.json('deploy_env/openstack/invalid/expires', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Parameter 'expires' is invalid. Valid format: [0-9]+[smhdw] or null."
+
+  @openstack
+  Scenario: Send deploy env with invalid user (missing in mongo) for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_openstack_deploy_env %>,
+        <%= @formatter.json('deploy_env/openstack/invalid/users', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "These users are missing in mongo: 'non_existing_user'."
+
+  @openstack
+  Scenario: Send deploy env with invalid flavor for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_openstack_deploy_env %>,
+        <%= @formatter.json('deploy_env/openstack/invalid/flavor', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid flavor 'wrong_flavor'."
+
+  @openstack
+  Scenario: Send deploy env with invalid image for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_openstack_deploy_env %>,
+        <%= @formatter.json('deploy_env/openstack/invalid/image', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid image 'wrong_image'."
+
+  @openstack
+  Scenario: Send deploy env with empty subnets for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_openstack_deploy_env %>,
+        <%= @formatter.json('deploy_env/openstack/invalid/subnets_empty', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Subnets array can not be empty"
+
+  @openstack
+  Scenario: Send deploy env with invalid subnets for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_openstack_deploy_env %>,
+        <%= @formatter.json('deploy_env/openstack/invalid/subnets_invalid', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid subnets 'wrong_subnet'."
+
+  @openstack
+  Scenario: Send deploy env with invalid groups for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_openstack_deploy_env %>,
+        <%= @formatter.json('deploy_env/openstack/invalid/groups', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid groups 'wrong_group'."
+
+
+  @openstack
+  Scenario: Create deploy env for project <%= openstack_project_name %>
+    When I send PUT '/v2.0/project/<%= openstack_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_openstack_deploy_env %>,
+        <%= @formatter.json('deploy_env/openstack/valid_double', spaces: 8) %>
+      ],
+      "name": "<%= openstack_project_name %>"
+    }
+    """
+    Then response should be '200'
+
+
+  #---------------------
+  # EC2
+  #---------------------
+
+  <% ec2_project_name = @config["ec2"]["project"]["name"] %>
+  <% precreated_ec2_deploy_env = @formatter.json('deploy_env/ec2/valid', spaces: 8) %>
+  @ec2
+  Scenario: Send deploy env with invalid runlist for project <%= ec2_project_name %>
+    When I send PUT '/v2.0/project/<%= ec2_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= @formatter.json('deploy_env/ec2/valid', spaces: 8) %>,
+        <%= @formatter.json('deploy_env/ec2/invalid/run_list', spaces: 8) %>
+      ],
+      "name": "<%= ec2_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid run list elements: 'wrong_role'. Each element should be role or recipe."
+
+  @ec2
+  Scenario: Send deploy env with invalid expiration for project <%= ec2_project_name %>
+    When I send PUT '/v2.0/project/<%= ec2_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_ec2_deploy_env %>,
+        <%= @formatter.json('deploy_env/ec2/invalid/expires', spaces: 8) %>
+      ],
+      "name": "<%= ec2_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Parameter 'expires' is invalid. Valid format: [0-9]+[smhdw] or null."
+
+  @ec2
+  Scenario: Send deploy env with invalid user (missing in mongo) for project <%= ec2_project_name %>
+    When I send PUT '/v2.0/project/<%= ec2_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_ec2_deploy_env %>,
+        <%= @formatter.json('deploy_env/ec2/invalid/users', spaces: 8) %>
+      ],
+      "name": "<%= ec2_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "These users are missing in mongo: 'non_existing_user'."
+
+  @ec2
+  Scenario: Send deploy env with invalid flavor for project <%= ec2_project_name %>
+    When I send PUT '/v2.0/project/<%= ec2_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_ec2_deploy_env %>,
+        <%= @formatter.json('deploy_env/ec2/invalid/flavor', spaces: 8) %>
+      ],
+      "name": "<%= ec2_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid flavor 'wrong_flavor'."
+
+  @ec2
+  Scenario: Send deploy env with invalid image for project <%= ec2_project_name %>
+    When I send PUT '/v2.0/project/<%= ec2_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_ec2_deploy_env %>,
+        <%= @formatter.json('deploy_env/ec2/invalid/image', spaces: 8) %>
+      ],
+      "name": "<%= ec2_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid image 'wrong_image'."
+
+  @ec2
+  Scenario: Send deploy env with invalid subnets for project <%= ec2_project_name %>
+    When I send PUT '/v2.0/project/<%= ec2_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_ec2_deploy_env %>,
+        <%= @formatter.json('deploy_env/ec2/invalid/subnets_invalid', spaces: 8) %>
+      ],
+      "name": "<%= ec2_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid subnets 'wrong_subnet'."
+
+  @ec2
+  Scenario: Send deploy env with invalid groups for project <%= ec2_project_name %>
+    When I send PUT '/v2.0/project/<%= ec2_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_ec2_deploy_env %>,
+        <%= @formatter.json('deploy_env/ec2/invalid/groups', spaces: 8) %>
+      ],
+      "name": "<%= ec2_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid groups 'wrong_group'."
+
+  @ec2
+  Scenario: Create deploy env for project <%= ec2_project_name %>
+    When I send PUT '/v2.0/project/<%= ec2_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_ec2_deploy_env %>,
+        <%= @formatter.json('deploy_env/ec2/valid_double', spaces: 8) %>
+      ],
+      "name": "<%= ec2_project_name %>"
+    }
+    """
+    Then response should be '200'
+
+
+  #---------------------
+  # STATIC
+  #---------------------
+
+  <% static_project_name = @config["static"]["project"]["name"] %>
+  <% precreated_static_deploy_env = @formatter.json('deploy_env/static/valid', spaces: 8) %>
+  @static
+  Scenario: Send deploy env with invalid runlist for project <%= static_project_name %>
+    When I send PUT '/v2.0/project/<%= static_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_static_deploy_env %>,
+        <%= @formatter.json('deploy_env/static/invalid/run_list', spaces: 8) %>
+      ],
+      "name": "<%= static_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Invalid run list elements: 'wrong_role'. Each element should be role or recipe."
+
+  @static
+  Scenario: Send deploy env with invalid expiration for project <%= static_project_name %>
+    When I send PUT '/v2.0/project/<%= static_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_static_deploy_env %>,
+        <%= @formatter.json('deploy_env/static/invalid/expires', spaces: 8) %>
+      ],
+      "name": "<%= static_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "Parameter 'expires' is invalid. Valid format: [0-9]+[smhdw] or null."
+
+  @static
+  Scenario: Send deploy env with invalid user (missing in mongo) for project <%= static_project_name %>
+    When I send PUT '/v2.0/project/<%= static_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_static_deploy_env %>,
+        <%= @formatter.json('deploy_env/static/invalid/users', spaces: 8) %>
+      ],
+      "name": "<%= static_project_name %>"
+    }
+    """
+    Then response should be '400'
+    And response error should be "These users are missing in mongo: 'non_existing_user'."
+
+
+  @static
+  Scenario: Create deploy env for project <%= static_project_name %>
+    When I send PUT '/v2.0/project/<%= static_project_name %>' query with JSON body
+    """
+    {
+      "deploy_envs": [
+        <%= precreated_static_deploy_env %>,
+        <%= @formatter.json('deploy_env/static/valid_double', spaces: 8) %>
+      ],
+      "name": "<%= static_project_name %>"
+    }
+    """
+    Then response should be '200'
+

@@ -8,6 +8,7 @@ require "devops-client/options/project_options"
 require "json"
 require "set"
 require "devops-client/output/project"
+require "devops-client/handler/deploy_envs/deploy_env_factory"
 
 class Project < Handler
 
@@ -244,7 +245,7 @@ class Project < Handler
     if run_list.empty?
       exit unless question(I18n.t("handler.project.run_list.empty"))
     else
-      exit unless Project.validate_run_list(run_list)
+      exit unless DeployEnv.validate_run_list(run_list)
     end
     put "/project/#{args[3]}/#{args[4]}/run_list", run_list
   end
@@ -281,41 +282,10 @@ protected
     return p.list_handler(["provider", "list"]), p.table
   end
 
-  def get_images provider
-    img = Image.new(@host, self.def_options)
-    img.auth = self.auth
-    return img.list_handler(["image", "list", provider]), img.table
-  end
-
-  def get_flavors provider
-    f = Flavor.new(@host, self.def_options)
-    f.auth = self.auth
-    return f.list_handler(["flavor", "list", provider]), f.table
-  end
-
-  def get_groups provider, vpcId
-    g = Group.new(@host, self.def_options)
-    g.auth = self.auth
-    p = ["group", "list", provider]
-    p.push vpcId if !vpcId.nil? and provider == "ec2"
-    return g.list_handler(p), g.table
-  end
-
-  def get_networks provider
-    n = Network.new(@host, self.def_options)
-    n.auth = self.auth
-    return n.list_handler(["network", "list", provider]), n.table
-  end
-
-  def get_users
-    u = User.new(@host, self.def_options)
-    u.auth = self.auth
-    return u.list_handler, u.table
-  end
-
   def create_project args, env_method_name, type=nil
     project_name = args[2]
     providers = {}
+    providers[:obj], providers[:table] = get_providers
     begin
       project = get_project_info_obj(project_name)
       puts_warn I18n.t("handler.project.exist", :project => project_name)
@@ -351,12 +321,17 @@ protected
     set_identifier(d, names)
 
     set_provider(d, providers)
-    buf = providers[d[:provider]]
 
-    set_flavor(d, buf)
-    set_image(d, buf)
-    vpc_id = set_subnets(d, buf)
-    set_groups(d, buf, vpc_id)
+    de = DeployEnvFactory.create(d[:provider], @host, self.options, self.auth)
+    de.fill d
+
+=begin
+    unless d[:provider] == "static"
+      set_flavor(d, buf)
+      set_image(d, buf)
+      vpc_id = set_subnets(d, buf)
+      set_groups(d, buf, vpc_id)
+    end
     set_users(d, buf)
 
     unless self.options[:run_list].nil?
@@ -373,6 +348,7 @@ protected
         s.empty? ? nil : s
       end
     end
+=end
     d
   end
 
@@ -391,7 +367,7 @@ protected
 
     unless self.options[:run_list].nil?
       self.options[:run_list] = self.options[:run_list].split(",").map{|e| e.strip}
-      abort("Invalid run list: '#{self.options[:run_list].join(",")}'") unless Project.validate_run_list(self.options[:run_list])
+      abort("Invalid run list: '#{self.options[:run_list].join(",")}'") unless DeployEnv.validate_run_list(self.options[:run_list])
     end
     set_parameter d, :run_list do
       set_run_list_cmd project, d[:identifier]
@@ -424,112 +400,9 @@ protected
   end
 
   def set_provider d, providers
-    if providers[:obj].nil?
-      providers[:obj], providers[:table] = get_providers
-      providers[:obj].each{|p| providers[p] = {}}
-    end
-
     set_parameter d, :provider do
       providers[:obj][ choose_number_from_list(I18n.t("headers.provider"), providers[:obj], providers[:table]) ]
     end
-  end
-
-  def set_flavor d, buf
-    flavors, tf = nil, nil
-    if buf[:flavors].nil?
-      flavors, tf = get_flavors(d[:provider])
-      add_object buf, :flavors, flavors, tf
-    else
-      flavors, tf = buf[:flavors][:obj], buf[:flavors][:table]
-    end
-    unless self.options[:flavor].nil?
-      f = flavors.detect { |f| f["id"] == self.options[:flavor] }
-      abort(I18n.t("handler.project.create.flavor.not_found")) if f.nil?
-    end
-    set_parameter d, :flavor do
-      choose_flavor_cmd(flavors, tf)["id"]
-    end
-  end
-
-  def set_image d, buf
-    images, ti = nil, nil
-    if buf[:images].nil?
-      images, ti = get_images(d[:provider])
-      add_object buf, :images, images, ti
-    else
-      images, ti = buf[:images][:obj], buf[:images][:table]
-    end
-    set_parameter d, :image do
-      choose_image_cmd(images, ti)["id"]
-    end
-  end
-
-  def set_subnets d, buf
-    networks, tn = nil, nil
-    if buf[:networks].nil?
-      networks, tn = get_networks(d[:provider])
-      add_object buf, :networks, networks, tn
-    else
-      networks, tn = buf[:networks][:obj], buf[:networks][:table]
-    end
-    unless self.options[:subnets].nil?
-      if "ec2" == d[:provider]
-        self.options[:subnets] = [ self.options[:subnets][0] ]
-      end
-    end
-    vpc_id = nil
-    set_parameter d, :subnets do
-      if "ec2" == d[:provider]
-        if networks.any?
-          num = choose_number_from_list(I18n.t("handler.project.create.subnet.ec2"), networks, tn, -1)
-          vpc_id = networks[num]["vpcId"] unless num == -1
-          num == -1 ? [] : [ networks[num]["subnetId"] ]
-        else
-          []
-        end
-      else
-        s = []
-        begin
-          s = choose_indexes_from_list(I18n.t("handler.project.create.subnet.openstack"), networks, tn).map{|i| networks[i]["name"]}
-        end while s.empty?
-        s
-      end
-    end
-    return vpc_id
-  end
-
-  def set_groups d, buf, vpc_id
-    groups, tg = nil, nil
-    if buf[:groups].nil?
-      groups, tg = get_groups(d[:provider], vpc_id)
-      add_object buf, :groups, groups, tg
-    else
-      groups, tg = buf[:groups][:obj], buf[:groups][:table]
-    end
-    set_parameter d, :groups do
-      list = groups.keys
-      choose_indexes_from_list(I18n.t("options.project.create.groups"), list, tg, "default", list.index("default")).map{|i| list[i]}
-    end
-  end
-
-  def set_users d, buf
-    users, tu = nil, nil
-    if buf[:users].nil?
-      users, tu = get_users
-      add_object buf, :users, users, tu
-    else
-      users, tu = buf[:users][:obj], buf[:users][:table]
-    end
-    set_parameter d, :users do
-      list = users.map{|u| u["id"]}
-      Set.new choose_indexes_from_list(I18n.t("handler.project.create.user"), list, tu).map{|i| list[i]}
-    end
-    d[:users].add(self.options[:username])
-    d[:users] = d[:users].to_a
-  end
-
-  def add_object tec, key, obj, table
-     tec[key] = {:obj => obj, :table => table}
   end
 
   def set_parameter obj, key
@@ -538,12 +411,6 @@ protected
     else
       obj[key] = self.options[key]
     end
-  end
-
-  # returns flavor hash
-  def choose_flavor_cmd flavors, table=nil
-    abort(I18n.t("handler.flavor.list.empty")) if flavors.empty?
-    flavors[ choose_number_from_list(I18n.t("headers.flavor"), flavors.map{|f| "#{f["id"]}. #{f["name"]} - #{f["ram"]}, #{f["disk"]}, #{f["v_cpus"]} CPU"}.join("\n"), table) ]
   end
 
   # returns project id
@@ -556,23 +423,6 @@ protected
   def choose_project_env project_envs, table=nil
     abort(I18n.t("handler.project.env.list.empty")) if project_envs.empty?
     project_envs[ choose_number_from_list(I18n.t("headers.project_env"), project_envs, table) ]
-  end
-
-  def set_run_list_cmd project, env
-    res = nil
-    begin
-      res = get_comma_separated_list(I18n.t("options.project.create.run_list") + ": ")
-    end until Project.validate_run_list(res)
-    res
-  end
-
-  def self.validate_run_list run_list
-    return true if run_list.empty?
-    rl = /\Arole|recipe\[[\w-]+(::[\w-]+)?\]\Z/
-    e = run_list.select {|l| (rl =~ l).nil?}
-    res = e.empty?
-    puts I18n.t("handler.project.create.run_list.invalid", :list => e.join(", ")) unless res
-    res
   end
 
 end

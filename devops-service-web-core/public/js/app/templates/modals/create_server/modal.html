@@ -1,0 +1,86 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3 class="modal-title">Launch new server <br> <small>Project: <b>{{project_id}}</b>, Env: <b>{{deploy_env}}</b></small></h3>
+    </div><!--modal-header-->
+    <div class="modal-body">
+      <form class="form-horizontal" id="properties">
+
+        <div class="form-group" hidden="true">
+          <label class="control-label col-sm-2" >Project</label>
+          <div class="col-sm-9">
+            <input name="project" class="form-control" value="{{project_id}}" type='text' readonly>
+          </div>
+        </div>
+
+        <div class="form-group" hidden="true">
+          <label class="control-label col-sm-2" >Env</label>
+          <div class="col-sm-9">
+            <input name="deploy_env" class="form-control" type='text' value="{{deploy_env}}" readonly>
+          </div>
+        </div>
+
+        <div class="form-group"  {{#unless accessLevels.level3}} style="display:none;" {{/unless}}>
+          <label class="control-label col-sm-2" >Name</label>
+          <div class="col-sm-9">
+            <input name="name" class="form-control" placeholder="Chef node name (optional)"  type='text'>
+          </div>
+        </div>
+
+        <div class="form-group" {{#unless accessLevels.level3}} style="display:none;" {{/unless}}>
+          <div class="col-sm-2"></div>
+          <div class="col-sm-9">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" name="without_bootstrap">Without bootstrap
+            </label>
+          </div>
+          </div>
+        </div>
+
+        <!--div class="form-group">
+          <div class="col-sm-2"></div>
+          <div class="col-sm-9">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" name="force">Force
+            </label>
+          </div>
+          </div>
+        </div -->
+
+        <!--div class="form-group">
+          <label for="select-entry" class="control-label col-sm-2" >Key</label>
+          <div class="col-sm-2"></div>
+          <div class="col-sm-9">
+            <select id="select-entry" class="form-control">
+              <option>Key1</option>
+              <option>Key2</option>
+              <option>Key3</option>
+            </select>
+          </div>
+        </div-->
+
+        <!--div class="form-group">
+          <label for="select-entry" class="control-label col-sm-2" >Groups</label>
+          <div class="col-sm-2"></div>
+          <div class="col-sm-9">
+            <select id="select-entry-{{id}}" class="form-control">
+              <option>Add..</option>
+            </select>
+          </div>
+        </div -->
+
+
+
+      </form>
+
+      <div id="result-label" class="alert"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      <button type="button" id="create-server" data-loading-text="Please wait..." class="btn btn-primary sendCollection">Launch server</button>
+    </div>
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

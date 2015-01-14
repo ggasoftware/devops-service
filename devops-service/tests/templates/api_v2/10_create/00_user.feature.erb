@@ -1,0 +1,134 @@
+@user
+Feature: create user
+
+  Scenario: create user with user without privileges
+    When I send POST '/v2.0/user' query with JSON body with user without privileges
+    """
+    {
+      "username": "<%= @config["user"]["name"] %>",
+      "email": "<%= @config["user"]["name"] %>@test.test",
+      "password": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '401'
+
+  Scenario: create user without header 'Accept'
+    When I send POST '/v2.0/user' query with JSON body without header 'Accept'
+    """
+    {
+      "username": "<%= @config["user"]["name"] %>",
+      "email": "<%= @config["user"]["name"] %>@test.test",
+      "password": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '406'
+
+  Scenario: create user without header 'Content-Type'
+    When I send POST '/v2.0/user' query with JSON body without header 'Content-Type'
+    """
+    {
+      "username": "<%= @config["user"]["name"] %>",
+      "email": "<%= @config["user"]["name"] %>@test.test",
+      "password": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '415'
+
+  Scenario: create user, invalid body: empty
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    """
+    Then response should be '400'
+
+  <% ["{}", "[]"].each do |k| %>
+  Scenario: create user, invalid body: body is a '<%= k %>'
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    <%= k %>
+    """
+    Then response should be '400'
+
+  <% end %>
+  <% elements = ["{}", "[]", "null" ] %>
+  <% elements.each do |k| %>
+  Scenario: create user, invalid body: username is a '<%= k %>'
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    {
+      "username": <%= k %>,
+      "email": "<%= @config["user"]["name"] %>@test.test",
+      "password": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '400'
+
+  <% end %>
+  <% elements.each do |k| %>
+  Scenario: create user, invalid body: password is a '<%= k %>'
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    {
+      "username": "<%= @config["user"]["name"] %>",
+      "email": "<%= @config["user"]["name"] %>@test.test",
+      "password": <%= k %>
+    }
+    """
+    Then response should be '400'
+
+  <% end %>
+  <% elements.each do |k| %>
+  Scenario: create user, invalid body: email is a '<%= k %>'
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    {
+      "username": "<%= @config["user"]["name"] %>",
+      "email": <%= k %>,
+      "password": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '400'
+
+  <% end %>
+
+  Scenario: create user, invalid body: without username
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    {
+      "email": "<%= @config["user"]["name"] %>@test.test",
+      "password": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '400'
+
+  Scenario: create user, invalid body: without email
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    {
+      "username": "<%= @config["user"]["name"] %>",
+      "password": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '400'
+
+  Scenario: create user, invalid body: without password
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    {
+      "email": "<%= @config["user"]["name"] %>@test.test",
+      "username": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '400'
+
+  Scenario: create user
+    When I send POST '/v2.0/user' query with JSON body
+    """
+    {
+      "username": "<%= @config["user"]["name"] %>",
+      "email": "<%= @config["user"]["name"] %>@test.test",
+      "password": "<%= @config["user"]["name"] %>"
+    }
+    """
+    Then response should be '201'
+    And the Content-Type header should include 'application/json'
+

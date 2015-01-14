@@ -34,3 +34,7 @@ config[:aws_secret_access_key] = "secret_access_key"
 config[:aws_ssh_key]   = "ssh_key"
 config[:aws_certificate]   = "/path/to/.ssh/ec2.pem"
 config[:aws_availability_zone]   = "aws_zone"
+
+# static settings
+config[:static_ssh_key]   = "ssh_key" # or nil
+config[:static_certificate]   = "/path/to/.ssh/static.pem"

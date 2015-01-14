@@ -1,0 +1,8 @@
+<label for="select-entry" class="control-label col-sm-2" >{{label}}</label>
+<div class="col-sm-10">
+  <select id="select-entry-{{id}}" name="{{id}}" class="form-control select-entry-{{label}}">
+    {{#each list.models}}
+      <option value="{{this.attributes.keyName}}" {{#if this.attributes.selected}} selected {{/if}} >{{this.attributes.displayName}}</option>
+    {{/each}}
+  </select>
+</div>

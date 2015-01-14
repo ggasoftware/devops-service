@@ -5,6 +5,8 @@ module DeployEnvCommands
 
   include ImageCommands
 
+  # All these commands should be removed when all deploy envs are switched to new validation system
+
   def check_expires! val
     raise InvalidRecord.new "Parameter 'expires' is invalid" if val.match(/^[0-9]+[smhdw]$/).nil?
   end
@@ -24,17 +26,19 @@ module DeployEnvCommands
     n = subnets - networks.map{|n| n["name"]}
     raise InvalidRecord.new "Invalid networks '#{n.join("', '")}'" unless n.empty?
 
-    filter = nil
-    if p.name == ::Version2_0::Provider::Ec2::PROVIDER
+    filter = yield(networks)
+=begin
+    if p.name == ::Provider::Ec2::PROVIDER
       unless subnets.empty?
         subnets = [ subnets[0] ] if subnets.size > 1
         filter = {"vpc-id" => networks.detect{|n| n["name"] == subnets[0]}["vpcId"] }
       end
-    elsif p.name == ::Version2_0::Provider::Openstack::PROVIDER
+    elsif p.name == ::Provider::Openstack::PROVIDER
       if subnets.empty?
         raise InvalidRecord.new "Subnets array can not be empty"
       end
     end
+=end
 
     g = groups - p.groups(filter).keys
     raise InvalidRecord.new "Invalid groups '#{g.join("', '")}'" unless g.empty?

@@ -60,6 +60,7 @@ module Version2_0
     #   - body :
     #   {
     #     "username": "user name",
+    #     "email": "user email",
     #     "password": "user password"
     #   }
     #
@@ -69,7 +70,7 @@ module Version2_0
       check_headers :accept, :content_type
       check_privileges("user", "w")
       user = create_object_from_json_body
-      ["username", "password"].each do |p|
+      ["username", "password", "email"].each do |p|
         check_string(user[p], "Parameter '#{p}' must be a not empty string")
       end
       BaseRoutes.mongo.user_insert User.new(user)
@@ -115,7 +116,7 @@ module Version2_0
     #   - body :
     #   {
     #     "cmd": "command or all", -> if empty, set default privileges
-    #     "privileges": "priv" -> 'r', 'rw' or ''
+    #     "privileges": "priv" -> 'rwx' or ''
     #   }
     #
     # * *Returns* :

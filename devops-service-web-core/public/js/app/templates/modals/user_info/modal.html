@@ -1,0 +1,23 @@
+<div class="modal-dialog user-info-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3 class="modal-title">{{id}}'s profile<small></small></h3>
+    </div><!--modal-header-->
+
+    <div class="modal-body">
+      <h3>Privileges</h3>
+      <table class='table'>
+        <tr>
+          <th>Scope</th>
+          <th>Value
+        </tr>
+        {{privilegesRows}}
+      </table>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    </div>
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

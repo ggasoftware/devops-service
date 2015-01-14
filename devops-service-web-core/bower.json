@@ -1,0 +1,37 @@
+{
+  "name": "devops-service-web-core",
+  "version": "0.1.43",
+  "authors": [
+    "Timur Lianov <lianovt@gmail.com>",
+    "Anton Chuchkalov <a2new@yandex.ru>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "almond": "~0.2.0",
+    "backbone": "1.1.2",
+    "backbone.marionette": "2.2.0",
+    "handlebars": "1.0.0-rc.1",
+    "hbs": "0.4.0",
+    "jquery": "2.0.3",
+    "jqueryui": "1.10.3",
+    "requirejs": "2.1.15",
+    "r.js": "2.1.2",
+    "backbone.syphon": "0.4.1",
+    "text": "2.0.0",
+    "Backbone.validateAll": "*",
+    "backbone.caching-fetcher": "*",
+    "jquery-mobile": "~1.4.5",
+    "require-handlebars-plugin": "~0.11.2"
+  },
+  "resolutions": {
+    "jquery": "2.0.3"
+  }
+}

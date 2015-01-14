@@ -1,4 +1,5 @@
 require "db/exceptions/invalid_record"
+require "db/exceptions/record_not_found"
 require "db/mongo/models/deploy_env"
 require "db/mongo/models/user"
 require "db/mongo/models/deploy_env_multi"
@@ -14,22 +15,27 @@ class Project < MongoModel
 
   MULTI_TYPE = "multi"
 
+  def self.fields
+    ["deploy_envs", "type"]
+  end
+
   def initialize p={}
     self.id = p["name"]
-    raise InvalidRecord.new "No deploy envirenments for project #{self.id}" if p["deploy_envs"].nil? or p["deploy_envs"].empty?
-    self.deploy_envs = []
+    #raise InvalidRecord.new "No deploy envirenments for project #{self.id}" if p["deploy_envs"].nil? or p["deploy_envs"].empty?
     self.type = p["type"]
     env_class = ( self.multi? ? DeployEnvMulti : DeployEnv )
-
-    p["deploy_envs"].each do |e|
-      env = env_class.create(e)
-      self.deploy_envs.push env
+    unless p["deploy_envs"].nil?
+      self.deploy_envs = []
+      p["deploy_envs"].each do |e|
+        env = env_class.create(e)
+        self.deploy_envs.push env
+      end
     end
   end
 
   def deploy_env env
     de = self.deploy_envs.detect {|e| e.identifier == env}
-    raise InvalidRecord.new("Project '#{self.id}' does not have deploy environment '#{env}'") if de.nil?
+    raise RecordNotFound.new("Project '#{self.id}' does not have deploy environment '#{env}'") if de.nil?
     de
   end
 
@@ -108,7 +114,8 @@ class Project < MongoModel
   end
 
   def to_hash_without_id
-    h = {"deploy_envs" => self.deploy_envs.map {|e| e.to_hash}}
+    h = {}
+    h["deploy_envs"] = self.deploy_envs.map {|e| e.to_hash} unless self.deploy_envs.nil?
     if self.multi?
       h["type"] = MULTI_TYPE
     end

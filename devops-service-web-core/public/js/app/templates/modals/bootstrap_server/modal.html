@@ -1,0 +1,54 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3 class="modal-title">Add and bootstrap server</h3>
+    </div><!--modal-header-->
+    <div class="modal-body">
+
+      <form class="form-horizontal" id="properties">
+        <div class="form-group">
+          <label class="control-label col-sm-2" >IP</label>
+          <div class="col-sm-9">
+            <input name="ip" id="input-ip" class="form-control" type='text'>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label col-sm-2" >Template</label>
+          <div class="col-sm-9">
+            <input name="ip" value="omnibus" id="bootstrap-template" class="form-control" type='text' disabled>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label col-sm-2" >Remote user</label>
+          <div class="col-sm-9">
+            <input name="remote_user" class="form-control" type='text'>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label col-sm-2" >Key ID</label>
+          <div class="col-sm-9">
+            <input name="key_id" class="form-control" type='text'>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label col-sm-2" >Chef node name</label>
+          <div class="col-sm-9">
+            <input name="chef_node_name" class="form-control" id="input-chef-node-name" type='text'>
+          </div>
+        </div>
+
+      </form>
+
+      <div class="alert" id="result-label"> </div> 
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-default" id="bootstrap-server">Add and bootstrap</button>
+    </div>
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

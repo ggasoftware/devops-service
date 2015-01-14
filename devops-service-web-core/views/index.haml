@@ -1,0 +1,11 @@
+#container
+  #content
+    #navbar-custom
+    #navbar
+      %div{ :id => "navbar-nav", :class => "navbar-nav-container" }
+    #breadcrumbs
+    %div{:id => "alert", :class => "dsw-alert-region"}
+    #workspace
+#footer
+:javascript
+  window.username = "#{session[:username]}"

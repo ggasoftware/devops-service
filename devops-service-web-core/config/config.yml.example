@@ -1,0 +1,15 @@
+host: "devops-service.foo.com:7070"
+api_version: "v2.0"
+path_prefix: "/services/devops"
+json_headers:
+  'Content-Type': 'application/json'  
+  'Accept': 'application/json' 
+web_admin:
+  username: "web-admin"
+  password: "pass"
+default_password: "pass"
+access_levels:
+  - level: 3
+    users: [ "admin1", "admin2" ]
+  - level: 2
+    users: [ "support1", "support2" ]

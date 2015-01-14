@@ -1,0 +1,28 @@
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3 class="modal-title">Run script</h3>
+        </div>
+        <!--modal-header-->
+        <div class="modal-body">
+          <h2>Add script</h2>
+          <div>
+            <form action='script' class='well form' id='add-script-form' method='post'>
+              <br>
+              <input id='id-input' name='script_name' placeholder='Script ID' type='text'>
+              <br>
+              <input class='file' id='path-input' name='file_name' placeholder='Path to script' type='file'>
+              <br>
+              <button class='btn btn-success createScript' type='button'>Add</button>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" id="run-script" data-loading-text="Please wait..."
+                    class="btn btn-primary">Run script
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,7 @@
+{{#each data}}
+  {{#if this}}
+<div><span class="label label-console-message label-{{../../type}}">{{../../header}}</span> {{this}}</div>
+  {{else}}
+<div><span class="label label-console-message label-{{../../type}}">></span></div>
+  {{/if}}
+{{/each}}

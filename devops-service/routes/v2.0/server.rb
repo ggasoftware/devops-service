@@ -1,3 +1,4 @@
+require "uri"
 require "json"
 require "chef"
 require "commands/knife_commands"
@@ -7,6 +8,9 @@ require "providers/provider_factory"
 require "db/mongo/models/deploy_env"
 require "commands/status"
 require "commands/server"
+require "commands/bootstrap_templates"
+require "workers/create_server_worker"
+require "workers/bootstrap_worker"
 
 module Version2_0
 
@@ -32,29 +36,18 @@ module Version2_0
 
     include StatusCommands
     include ServerCommands
+    include BootstrapTemplatesCommands
 
     def initialize wrapper
       super wrapper
       puts "Server routes initialized"
     end
 
-    before "/server/:name_or_cmd" do
-      if request.get?
-        check_headers :accept
-      else
-        check_headers :accept, :content_type
-      end
-      check_privileges("server")
-    end
-
-    before %r{\A/server/[\w]+/(un)?pause\z} do
+    before %r{\A/server/[\w]+/(pause|unpouse|reserve|unreserve)\z} do
       check_headers :accept, :content_type
       check_privileges("server", "w")
-    end
-
-    before "/servers/:provider" do
-      check_headers :accept
-      check_privileges("server", "r")
+      body = create_object_from_json_body(Hash, true)
+      @key = (body.nil? ? nil : body["key"])
     end
 
     after %r{\A/server(/[\w]+)?\z | \A/server/(add|bootstrap)\z | \A/server/[\w]+/(un)?pause\z} do
@@ -69,6 +62,8 @@ module Version2_0
     #   - method : GET
     #   - headers :
     #     - Accept: application/json
+    #   - params :
+    #     - fields - show server fields, available values: project, deploy_env, provider, remote_user, private_ip, public_ip, created_at, created_by, static, key, reserved_by
     #
     # * *Returns* :
     #   [
@@ -80,7 +75,14 @@ module Version2_0
     get "/servers" do
       check_headers :accept
       check_privileges("server", "r")
-      json BaseRoutes.mongo.servers.map {|s| s.to_list_hash}
+      fields = []
+      if params.key?("fields") and params["fields"].is_a?(Array)
+        Server.fields.each do |k|
+          fields.push k if params["fields"].include?(k)
+        end
+      end
+      reserved = (params.key?("reserved") ? true : nil)
+      json BaseRoutes.mongo.servers(nil, nil, nil, reserved, fields).map {|s| s.to_hash}
     end
 
     # Get chef nodes list
@@ -97,6 +99,8 @@ module Version2_0
     #     }
     #   ]
     get "/servers/chef" do
+      check_headers :accept
+      check_privileges("server", "r")
       json KnifeCommands.chef_node_list
     end
 
@@ -137,7 +141,9 @@ module Version2_0
     #     }
     #   ]
     get "/servers/:provider" do
-      json ::Version2_0::Provider::ProviderFactory.get(params[:provider]).servers
+      check_headers :accept
+      check_privileges("server", "r")
+      json ::Provider::ProviderFactory.get(params[:provider]).servers
     end
 
     # Get server info by :name
@@ -146,6 +152,8 @@ module Version2_0
     #   - method : GET
     #   - headers :
     #     - Accept: application/json
+    #   - parameters:
+    #     key=instance -> search server by instance_id rather then chef_node_name
     #
     # * *Returns* :
     #   [
@@ -154,7 +162,9 @@ module Version2_0
     #     }
     #   ]
     get "/server/:name" do
-      json BaseRoutes.mongo.server_by_chef_node_name(params[:name])
+      check_headers :accept
+      check_privileges("server", "r")
+      json get_server(params[:name], params[:key]).to_hash
     end
 
     # Delete devops server
@@ -164,18 +174,19 @@ module Version2_0
     #   - headers :
     #     - Accept: application/json
     #     - Content-Type: application/json
-    #   - body
-    #   {
-    #     "key": "instance" -> if key=instance, then :name - instance id, if key=null, then name - node name
-    #   }
+    #   - body :
+    #     {
+    #       "key": "instance", -> search server by instance_id rather then chef_node_name
+    #     }
     #
     # * *Returns* :
     #   200 - Deleted
     delete "/server/:id" do
+      check_headers
+      check_privileges("server", "w")
       body = create_object_from_json_body(Hash, true)
       key = (body.nil? ? nil : body["key"])
-      id = params[:id]
-      s = (key == "instance" ? BaseRoutes.mongo.server_by_instance_id(id) : BaseRoutes.mongo.server_by_chef_node_name(id))
+      s = get_server(params[:id], key)
       ### Authorization
       BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, request.env['REMOTE_USER']
       info, r = delete_server(s, BaseRoutes.mongo, logger)
@@ -197,7 +208,8 @@ module Version2_0
     #       "without_bootstrap": null, -> do not install chef on instance if true
     #       "force": null,             -> do not delete server on error
     #       "groups": [],              -> specify special security groups, overrides value from project env
-    #       "key": "ssh key"           -> specify ssh key for server, overrides value from project env
+    #       "key": "ssh key",          -> specify ssh key for server, overrides value from project env
+    #       "trace": true              -> return output in stream
     #     }
     #
     # * *Returns* : text stream
@@ -220,7 +232,7 @@ module Version2_0
       p = BaseRoutes.mongo.check_project_auth(project_name, env_name, user)
       env = p.deploy_env(env_name)
 
-      provider = ::Version2_0::Provider::ProviderFactory.get(env.provider)
+      provider = ::Provider::ProviderFactory.get(env.provider)
       check_chef_node_name(server_name, provider) unless server_name.nil?
       unless groups.nil?
         buf = groups - provider.groups.keys
@@ -228,40 +240,33 @@ module Version2_0
       end
 
       servers = extract_servers(provider, p, env, body, user, BaseRoutes.mongo)
-      stream() do |out|
-        status = []
-        servers.each do |s|
+      if body.key?("trace")
+        stream() do |out|
           begin
-            unless provider.create_server(s, out)
-              status.push 3
-              next
-            end
-            logger.info "Server with parameters: #{s.to_hash.inspect} is running"
-            unless without_bootstrap
-              key = new_key || BaseRoutes.mongo.key(s.key)
-              bootstrap(s, out, key.path, logger)
-              logger.info "Server with id '#{s.id}' is bootstraped"
-              if force or check_server(s)
-                BaseRoutes.mongo.server_insert s
-                scheduler.in(env.expires, ExpireHandler.new(s, logger)) unless env.expires.nil?
-                out << "Server #{s.chef_node_name} is created"
-                status.push 0
-              else
-                out << roll_back(s, provider)
-                status.push 5
-              end
-              out << "\n"
-            else
-              BaseRoutes.mongo.server_insert s
-              status.push 0
+            status = []
+            servers.each do |s|
+              res = create_server_proc.call(out, s, provider, BaseRoutes.mongo)
+              status.push res
             end
             out << create_status(status)
           rescue IOError => e
             logger.error e.message
-            logger.warn roll_back(s, provider)
-            break
           end
         end
+      else
+        dir = DevopsService.config[:report_dir_v2]
+        files = []
+        uri = URI.parse(request.url)
+        servers.each do |s|
+          h = s.to_hash
+          h["options"] = s.options
+          jid = CreateServerWorker.perform_async(dir, env.provider, h, request.env['REMOTE_USER'], DevopsService.config)
+          logger.info "Job '#{jid}' has been started"
+          uri.path =  "#{DevopsService.config[:url_prefix]}/v2.0/report/" + jid
+          files.push uri.to_s
+        end
+        sleep 1
+        json files
       end
     end
 
@@ -271,15 +276,20 @@ module Version2_0
     #   - method : POST
     #   - headers :
     #     - Accept: application/json
+    #     - Content-Type: application/json
+    #   - body :
+    #     {
+    #       "key": "instance", -> search server by instance_id rather then chef_node_name
+    #     }
     #
     # * *Returns* :
     #   200 - Paused
     post "/server/:node_name/pause" do
-      s = BaseRoutes.mongo.server_by_chef_node_name params[:node_name]
+      s = get_server(params[:node_name], @key)
       ## Authorization
       BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, request.env['REMOTE_USER']
-      provider = ::Version2_0::Provider::ProviderFactory.get(s.provider)
-      r = provider.pause_server s.id
+      provider = ::Provider::ProviderFactory.get(s.provider)
+      r = provider.pause_server s
       if r.nil?
         create_response("Server with instance ID '#{s.id}' and node name '#{params[:node_name]}' is paused")
       else
@@ -293,20 +303,72 @@ module Version2_0
     #   - method : POST
     #   - headers :
     #     - Accept: application/json
+    #     - Content-Type: application/json
+    #   - body :
+    #     {
+    #       "key": "instance", -> search server by instance_id rather then chef_node_name
+    #     }
     #
     # * *Returns* :
     #   200 - Unpaused
     post "/server/:node_name/unpause" do
-      s = BaseRoutes.mongo.server_by_chef_node_name params[:node_name]
+      s = get_server(params[:node_name], @key)
        ## Authorization
       BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, request.env['REMOTE_USER']
-      provider = ::Version2_0::Provider::ProviderFactory.get(s.provider)
-      r = provider.unpause_server s.id
+      provider = ::Provider::ProviderFactory.get(s.provider)
+      r = provider.unpause_server s
       if r.nil?
         create_response("Server with instance ID '#{s.id}' and node name '#{params[:node_name]}' is unpaused")
       else
         halt_response("Server with instance ID '#{s.id}' and node name '#{params[:node_name]}' can not be unpaused, It in state '#{r}'", 409)
       end
+    end
+
+    # Reserve devops server
+    #
+    # * *Request*
+    #   - method : POST
+    #   - headers :
+    #     - Accept: application/json
+    #     - Content-Type: application/json
+    #   - body :
+    #     {
+    #       "key": "instance", -> search server by instance_id rather then chef_node_name
+    #     }
+    #
+    # * *Returns* :
+    #   200 - Reserved
+    post "/server/:node_name/reserve" do
+      s = get_server(params[:node_name], params[:key])
+      user = request.env['REMOTE_USER']
+      BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, user
+      halt_response(400, "Server '#{params[:node_name]}' already reserved") unless s.reserved_by.nil?
+      s.reserved_by = user
+      BaseRoutes.mongo.server_update(s)
+      create_response("Server '#{params[:node_name]}' has been reserved")
+    end
+
+    # Unreserve devops server
+    #
+    # * *Request*
+    #   - method : POST
+    #   - headers :
+    #     - Accept: application/json
+    #     - Content-Type: application/json
+    #   - body :
+    #     {
+    #       "key": "instance", -> search server by instance_id rather then chef_node_name
+    #     }
+    #
+    # * *Returns* :
+    #   200 - Unreserved
+    post "/server/:node_name/unreserve" do
+      s = get_server(params[:node_name], params[:key])
+      BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, request.env['REMOTE_USER']
+      halt_response(400, "Server '#{params[:node_name]}' is not reserved") if s.reserved_by.nil?
+      s.reserved_by = nil
+      BaseRoutes.mongo.server_update(s)
+      create_response("Server '#{params[:node_name]}' has been unreserved")
     end
 
     # Bootstrap devops server
@@ -327,13 +389,15 @@ module Version2_0
     # * *Returns* : text stream
     # TODO: check bootstrap template name
     post "/server/bootstrap" do
+      check_headers
+      check_privileges("server", "w")
       body = create_object_from_json_body(Hash, true)
       id = check_string(body["instance_id"], "Parameter 'instance_id' must be a not empty string")
       name = check_string(body["name"], "Parameter 'name' should be a not empty string", true)
       rl = check_array(body["run_list"], "Parameter 'run_list' should be a not empty array of string", String, true)
       unless rl.nil?
-        e = DeployEnv.validate_run_list(rl)
-        halt_response("Invalid run list elements: '#{e.join("', '")}'") unless e.empty?
+        validator = Validators::Helpers::RunList.new(rl)
+        halt_response(validator.message) unless validator.valid?
       end
       t = check_string(body["bootstrap_template"], "Parameter 'bootstrap_template' should be a not empty string", true)
       s = BaseRoutes.mongo.server_by_instance_id(id)
@@ -341,30 +405,60 @@ module Version2_0
       p = BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, request.env['REMOTE_USER']
       d = p.deploy_env s.deploy_env
 
+      provider = ::Provider::ProviderFactory.get(s.provider)
+
+      check_chef_node_name(name, provider) unless name.nil?
       s.options = {
         :run_list => rl || d.run_list,
       }
-      s.options[:bootstrap_template] = t unless t.nil?
-      stream() do |out|
-        begin
-          s.chef_node_name = name || "static_#{s.key}-#{Time.now.to_i}"
-          cert = BaseRoutes.mongo.key s.key
-          logger.debug "Bootstrap certificate path: #{cert.path}"
-          bootstrap s, out, cert.path, logger
-          str = nil
-          if check_server(s)
-            BaseRoutes.mongo.server_update s
-            str = "Server with id '#{s.id}' is bootstraped"
-            logger.info str
-          else
-            str = "Server with id '#{s.id}' is not bootstraped"
-            logger.warn str
+      unless t.nil?
+        templates = get_templates
+        halt_response("Invalid bootstrap template '#{t}', available values: #{templates.join(", ")}", 400) unless templates.include?(t)
+        s.options[:bootstrap_template] = t
+      end
+      s.chef_node_name = name || provider.create_default_chef_node_name(s)
+      logger.debug "Chef node name: '#{s.chef_node_name}'"
+      status = []
+      if body.key?("trace")
+        stream() do |out|
+          begin
+            cert = BaseRoutes.mongo.key s.key
+            logger.debug "Bootstrap certificate path: #{cert.path}"
+            bootstrap s, out, cert.path, logger
+            str = nil
+            r = if check_server(s)
+              BaseRoutes.mongo.server_set_chef_node_name s
+              str = "Server with id '#{s.id}' is bootstraped"
+              logger.info str
+              0
+            else
+              str = "Server with id '#{s.id}' is not bootstraped"
+              logger.warn str
+              1
+            end
+            status.push r
+            out << str
+            out << "\n"
+            out << create_status(status)
+          rescue IOError => e
+            logger.error e.message
           end
-          out << str
-          out << "\n"
-        rescue IOError => e
-          logger.error e.message
         end
+      else
+        dir = DevopsService.config[:report_dir_v2]
+        files = []
+        uri = URI.parse(request.url)
+        h = s.to_hash
+        h["options"] = s.options
+        h["_id"] = s.id
+        jid = BootstrapWorker.perform_async(dir, d.provider, h, request.env['REMOTE_USER'], DevopsService.config)
+        logger.info "Job '#{jid}' has been started"
+        uri.path =  "#{DevopsService.config[:url_prefix]}/v2.0/report/" + jid
+        uri.query = nil
+        uri.fragment = nil
+        files.push uri.to_s
+        sleep 1
+        json files
       end
     end
 
@@ -389,6 +483,8 @@ module Version2_0
     #   200 - Added
     # TODO: should be refactored
     post "/server/add" do
+      check_headers
+      check_privileges("server", "w")
       body = create_object_from_json_body
       project = check_string(body["project"], "Parameter 'project' must be a not empty string")
       deploy_env = check_string(body["deploy_env"], "Parameter 'deploy_env' must be a not empty string")
@@ -401,8 +497,9 @@ module Version2_0
       d = p.deploy_env(deploy_env)
 
       cert = BaseRoutes.mongo.key(key)
+      provider = ::Provider::ProviderFactory.get("static")
       s = Server.new
-      s.provider = "static"
+      s.provider = provider.name
       s.project = project
       s.deploy_env = deploy_env
       s.remote_user = remote_user
@@ -416,19 +513,8 @@ module Version2_0
     end
 
   private
-    def roll_back s, provider
-      str = ""
-      unless s.id.nil?
-        str << "Server '#{s.chef_node_name}' with id '#{s.id}' is not created\n"
-        str << delete_from_chef_server(s.chef_node_name).values.join("\n")
-        begin
-          str << provider.delete_server(s.id) unless s.static
-        rescue => e
-          str << e.message
-        end
-        str << "\nRolled back\n"
-      end
-      return str
+    def get_server id, key
+      key == "instance" ? BaseRoutes.mongo.server_by_instance_id(id) : BaseRoutes.mongo.server_by_chef_node_name(id)
     end
 
     def check_chef_node_name name, provider

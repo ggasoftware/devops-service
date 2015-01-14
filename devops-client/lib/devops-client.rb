@@ -34,14 +34,14 @@ module DevopsClient
       abort(I18n.t("config.invalid.host"), :file => @@config_file)
     end
     [:api, :username, :password].each do |key|
-      if config[key].nil?
+      if config[key].nil? or config[key].empty?
         abort(I18n.t("config.invalid.empty", :file => @@config_file, :key => key))
       end
     end
     configure_proxy config
 
     host = config[:host]
-    default = {:username => config[:username], :api => config[:api], :host => config[:host]}
+    default = {:username => config[:username], :api => config[:api], :host => config[:host], :prefix => ((config[:prefix].nil? or config[:prefix].empty?) ? nil : config[:prefix])}
     auth = {:username => config[:username], :password => config[:password], :type => "basic"}
 
     handler = HandlerFactory.create(ARGV[0], host, auth, default)
@@ -102,7 +102,6 @@ module DevopsClient
         end
       end
     else
-      puts I18n.t("log.warn", :msg => I18n.t("config.not_exist", :file => file))
       config = set_default_config(file)
     end
     config
@@ -112,6 +111,7 @@ module DevopsClient
     locales = I18n.locales
     config = {:api => "v2.0", :locale => "en"}
     I18n.language = config[:locale]
+    puts I18n.t("log.warn", :msg => I18n.t("config.not_exist", :file => file))
     config[:locale] = begin
       l = get_config_parameter(I18n.t("config.property.lang", :langs => locales.join(", ")), config[:locale])
       raise ArgumentError unless locales.include?(l)
@@ -121,6 +121,7 @@ module DevopsClient
       retry
     end
     config[:host] = get_config_parameter(I18n.t("config.property.host"))
+    config[:prefix] = get_config_parameter(I18n.t("config.property.prefix"))
     config[:api] = get_config_parameter(I18n.t("config.property.api"), config[:api])
     config[:username] = get_config_parameter(I18n.t("config.property.username"))
     config[:password] = get_config_parameter(I18n.t("config.property.password"))

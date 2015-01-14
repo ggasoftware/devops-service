@@ -1,0 +1,44 @@
+@user
+Feature: list user
+
+  Scenario: Get list of all users
+    When I send GET '/v2.0/users' query
+    Then response should be '200'
+    And the Content-Type header should include 'application/json'
+    And the JSON response should be an array
+    And response array should contains elements like:
+    """
+    [
+      {
+        "email": "test@test.test",
+        "privileges": {
+          "flavor": "rwx",
+          "group": "rwx",
+          "image": "rwx",
+          "project": "rwx",
+          "server": "rwx",
+          "key": "rwx",
+          "user": "rwx",
+          "filter": "rwx",
+          "network": "rwx",
+          "provider": "rwx",
+          "script": "rwx",
+          "templates": "rwx"
+        },
+        "id": "test"
+      }
+    ]
+    """
+
+  Scenario: Get list of all users without header 'Accept'
+    When I send GET '/v2.0/users' query without headers 'Accept'
+    Then response should be '406'
+
+  Scenario: Get list of all users without privileges
+    When I send GET '/v2.0/users' query with user without privileges
+    Then response should be '401'
+
+  Scenario: Get list of all users - invalid path
+    When I send GET '/v2.0/users/foo' query
+    Then response should be '404'
+

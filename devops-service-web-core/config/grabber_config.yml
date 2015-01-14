@@ -1,0 +1,3 @@
+grabber_host: '127.0.0.1'
+grabber_port: 8081
+sockets_port: 8080

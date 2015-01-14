@@ -7,7 +7,7 @@ module ImageCommands
     if filters.empty?
       []
     else
-      ::Version2_0::Provider::ProviderFactory.get(provider).images(filters)
+      ::Provider::ProviderFactory.get(provider).images(filters)
     end
   end
 end

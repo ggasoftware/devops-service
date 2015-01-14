@@ -1,0 +1,74 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <div class='row'>
+      <div class='col-md-12'>
+        <span class='pull-left'>
+          <h4 class="panel-title">{{chef_node_name}}</h4>
+          <span id="deploying-label" hidden> - deploying</span>
+        </span>
+        <a class="pull-right" data-toggle="collapse" href="#collapse-server-{{chef_node_name}}" id="view-servers">Details</a></span>
+      </div>
+    </div>
+    <div class='clearfix'></div>
+
+    <div id="deploying-loader" hidden>
+      </br>
+        <div class="progress progress-striped active">
+          <div  class="progress-bar"  role="progressbar" aria-valuenow="5" aria-valuemin="0" aria-valuemax="10" style="width: 100%">
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <div id="collapse-server-{{chef_node_name}}" class="panel-collapse collapse">
+    <div class="panel-body">
+        <ul>
+          <li><b>Provider:</b> {{modal.provider}}</li>
+          <li><b>Chef Env:</b> {{chefEnv}}</li>
+          <li><b>Chef node name:</b> {{modal.chef_node_name}}</li>
+          <li><b>Project:</b> {{modal.project}}</li>
+          <li><b>Deploy env:</b> {{modal.deploy_env}}</li>
+          <li><b>Private ip:</b> {{modal.private_ip}}</li>
+          <li><b>Launched at:</b> {{modal.created_at}}</li>
+          <li><b>Launched by:</b> {{modal.created_by}}</li>
+          <li><b>Static:</b> {{modal.static}}</li>
+        </ul>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <div class="btn-group">
+      <button class='btn btn-default btn-sm deploy-server' value="{{this.identifier}}">
+        <span class="glyphicon glyphicon-cloud-upload"></span>
+        Deploy
+      </button>
+
+      {{#unless isStatic}}
+        <button class='btn btn-default btn-sm reserve-server reserve' value="{{this.identifier}}">
+          <span class="glyphicon glyphicon-pushpin"></span>
+          {{reserveLabel}}
+        </button>
+
+        <button class='btn btn-default btn-sm pause-server' value="{{this.identifier}}">
+          <span class="glyphicon glyphicon-pause"></span>
+          Pause
+        </button>
+
+        <button class='btn btn-default btn-sm unpause-server' value="{{this.identifier}}">
+          <span class="glyphicon glyphicon-play"></span>
+          Unpause
+        </button>
+      {{/unless}}
+
+      <button class='btn btn-default btn-sm run-script' value="{{this.identifier}}">
+        <span class="glyphicon glyphicon-road"></span>
+        Run script
+      </button>
+
+    </div>
+    <div class="btn-group pull-right">
+      <button class='btn btn-danger btn-danger-override btn-sm delete-server'>
+        <span class="glyphicon glyphicon-trash"></span>
+      </button>
+    </div>
+  </div>
+</div>

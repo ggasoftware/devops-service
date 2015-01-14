@@ -1,0 +1,39 @@
+<div class="navbar dsw-navbar">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+      <span class="icon-bar">s</span>
+      <span class="icon-bar">d</span>
+      <span class="icon-bar">a</span>
+    </button>
+  </div>
+  <div class="collapse navbar-collapse" id="navbar-collapse">
+    <!--<div class="navbar-text pull-right">-->
+      <!--<a class="navbar-link">[ {{username}} ] </a>-->
+      <!--<a href="/logout">logout</a>-->
+    <!--</div>-->
+    <ul class="nav navbar-nav">
+
+      <li class="dropdown" id="projects">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Projects<b class="caret"></b></a>
+        <ul class="dropdown-menu">
+          {{#if accessLevels.level2}}
+          <li><a href="#projects/new">New project</a></li>
+          {{/if}}
+    <!--      <li><a href="#projects/request">Request new project</a></li>-->
+          <li><a href="#projects">Projects list</a></li>
+        </ul>
+      </li>
+
+      {{#if accessLevels.level2}}
+      <li id="reports">
+        <a href="#reports">Reports</a>
+      </li>
+
+<!--      <li id="requests">-->
+        <!--<a href="#requests">Requests <span class="badge">{{projectsCount}}</span></a>-->
+      <!--</li>-->
+      {{/if}}
+
+    </ul>
+  </div>
+</div>

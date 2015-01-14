@@ -1,4 +1,5 @@
 require "mongo"
+require "date"
 
 require "db/exceptions/record_not_found"
 require "db/exceptions/invalid_record"
@@ -6,6 +7,8 @@ require "exceptions/invalid_privileges"
 
 require "db/mongo/models/project"
 require "db/mongo/models/image"
+require "db/mongo/models/report"
+require "db/mongo/models/key"
 require "db/mongo/models/project"
 require "db/mongo/models/server"
 require "db/mongo/models/user"
@@ -25,6 +28,7 @@ class MongoConnector
     @keys = @db.collection("keys")
     @users = @db.collection("users")
     @statistic = @db.collection("statistic")
+    @reports = @db.collection("reports")
   end
 
   def images provider=nil
@@ -119,7 +123,7 @@ class MongoConnector
     p.to_a.map {|bp| Project.create_from_bson bp}
   end
 
-  def projects list=nil, type=nil
+  def projects list=nil, type=nil, fields=[]
     q = (list.nil? ? {} : {"_id" => {"$in" => list}})
     case type
     when :multi
@@ -127,7 +131,7 @@ class MongoConnector
     #else
     #  q["type"] = {"$exists" => false}
     end
-    res = @projects.find(create_query(q))
+    res = @projects.find(create_query(q), :fields => fields)
     a = res.to_a
     a.map {|bp| Project.create_from_bson bp}
   end
@@ -191,12 +195,29 @@ class MongoConnector
     end
   end
 
-  def servers p=nil, env=nil, names=nil
+  def servers_find q, fields
+    s = if fields.nil?
+      @servers.find(create_query(q))
+    else
+      @servers.find(create_query(q), :fields => fields)
+    end
+    s.to_a.map{|bs| Server.create_from_bson bs}
+  end
+
+  def servers p=nil, env=nil, names=nil, reserved=nil, fields=:all
     q = {}
     q["project"] = p unless p.nil? or p.empty?
     q["deploy_env"] = env unless env.nil? or env.empty?
     q["chef_node_name"] = {"$in" => names} unless names.nil? or names.class != Array
-    @servers.find(create_query(q)).to_a.map{|bs| Server.create_from_bson bs}
+    q["reserved_by"] = {"$ne" => nil} unless reserved.nil?
+    f = nil
+    unless fields == :all
+      f = fields
+      ["_id", "chef_node_name"].each do |k|
+        f.push(k) unless f.include?(k)
+      end
+    end
+    servers_find(q, f)
   end
 
   def servers_by_names names
@@ -229,6 +250,10 @@ class MongoConnector
 
   def server_update server
     @servers.update({"_id" => server.id}, server.to_hash_without_id)
+  end
+
+  def server_set_chef_node_name server
+    @servers.update({"_id" => server.id}, {"$set" => {"chef_node_name" => server.chef_node_name}})
   end
 
   def keys
@@ -319,10 +344,8 @@ class MongoConnector
   def check_user_privileges id, cmd, priv
     user = self.user(id)
     case priv
-    when "r"
-      raise InvalidPrivileges.new("Access denied for '#{user.id}'") unless user.check_privilege_read cmd
-    when "w"
-      raise InvalidPrivileges.new("Access denied for '#{user.id}'") unless user.check_privilege_write cmd
+    when "r", "w", "x"
+      raise InvalidPrivileges.new("Access denied for '#{user.id}'") unless user.check_privilege cmd, priv
     else
       raise InvalidPrivileges.new("Access internal problem with privilege '#{priv}'")
     end
@@ -338,6 +361,57 @@ class MongoConnector
 
   def statistic user, path, method, body, response_code
     @statistic.insert({:user => user, :path => path, :method => method, :body => body, :response_code => response_code, :date => Time.now})
+  end
+
+  def save_report r
+    r.created_at = Time.new
+    @reports.insert(r.to_mongo_hash)
+  end
+
+  def reports options={}
+    date = {}
+    if options.has_key?("date_from") or options.has_key?("date_to")
+      if options.has_key?("date_from")
+        begin
+          d = Date.parse(options["date_from"])
+          date["$gte"] = d.to_time
+        rescue ArgumentError
+        end
+      end
+      if options.has_key?("date_to")
+        begin
+          d = Date.parse(options["date_to"])
+          date["$lt"] = d.to_time
+        rescue ArgumentError
+        end
+      end
+      options.delete("date_from")
+      options.delete("date_to")
+      options["created_at"] = date unless date.empty?
+    end
+    if options.has_key?("type")
+      begin
+        options["type"] = Integer(options["type"])
+      rescue ArgumentError
+        options.delete("type")
+      end
+    end
+    sort = -1
+    if options.has_key?("sort")
+      sort = 1 if options["sort"] == "asc"
+      options.delete("sort")
+    end
+    @reports.find(options).to_a.map{|e| Report.new(e)}
+  end
+
+  def report id
+    r = @reports.find({"_id" => id}).to_a[0]
+    raise RecordNotFound.new("Report '#{id}' does not exist") if r.nil?
+    Report.new(r)
+  end
+
+  def set_report_status id, status
+    @reports.update({"_id" => id}, {"$set" => {"status" => status, "updated_at" => Time.new}})
   end
 
 private

@@ -3,7 +3,7 @@ require "db/mongo/models/mongo_model"
 
 class Server < MongoModel
 
-  attr_accessor :provider, :chef_node_name, :id, :remote_user, :project, :deploy_env, :private_ip, :public_ip, :created_at, :without_bootstrap, :created_by
+  attr_accessor :provider, :chef_node_name, :id, :remote_user, :project, :deploy_env, :private_ip, :public_ip, :created_at, :without_bootstrap, :created_by, :reserved_by
   attr_accessor :options, :static, :key
 
   types :id => {:type => String, :empty => false},
@@ -15,10 +15,27 @@ class Server < MongoModel
         :public_ip => {:type => String, :empty => true, :nil => true},
         :key => {:type => String, :empty => false},
         :created_by => {:type => String, :empty => false},
-        :chef_node_name => {:type => String, :empty => true}
+        :chef_node_name => {:type => String, :empty => true},
+        :reserved_by => {:type => String, :empty => true}
 
-  def initialize
-    self.static = false
+  def self.fields
+    ["chef_node_name", "project", "deploy_env", "provider", "remote_user", "private_ip", "public_ip", "created_at", "created_by", "static", "key", "reserved_by"]
+  end
+
+  def initialize s={}
+    self.provider = s["provider"]
+    self.chef_node_name = s["chef_node_name"]
+    self.id = s["_id"]
+    self.remote_user = s["remote_user"]
+    self.project = s["project"]
+    self.deploy_env = s["deploy_env"]
+    self.public_ip = s["public_ip"]
+    self.private_ip = s["private_ip"]
+    self.created_at = s["created_at"]
+    self.created_by = s["created_by"]
+    self.static = s["static"]
+    self.key = s["key"]
+    self.reserved_by = s["reserved_by"]
   end
 
   def validate!
@@ -38,8 +55,9 @@ class Server < MongoModel
       "created_at" => self.created_at,
       "created_by" => self.created_by,
       "static" => self.static,
-      "key" => self.key
-    }
+      "key" => self.key,
+      "reserved_by" => self.reserved_by
+    }.delete_if{|k,v| v.nil?}
   end
 
   def to_list_hash
@@ -50,20 +68,7 @@ class Server < MongoModel
   end
 
   def self.create_from_bson s
-    server = Server.new
-    server.provider = s["provider"]
-    server.chef_node_name = s["chef_node_name"]
-    server.id = s["_id"]
-    server.remote_user = s["remote_user"]
-    server.project = s["project"]
-    server.deploy_env = s["deploy_env"]
-    server.public_ip = s["public_ip"]
-    server.private_ip = s["private_ip"]
-    server.created_at = s["created_at"]
-    server.created_by = s["created_by"]
-    server.static = s["static"] || false
-    server.key = s["key"]
-    server
+    Server.new(s)
   end
 
   def info
@@ -75,6 +80,10 @@ class Server < MongoModel
     str << "Project: #{self.project} - #{self.deploy_env}\n"
     str << "Created by: #{self.created_by}"
     str
+  end
+
+  def static?
+    self.static || false
   end
 
 end

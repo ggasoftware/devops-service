@@ -1,0 +1,20 @@
+@user
+Feature: delete user
+
+  Scenario: delete user with user without privileges
+    When I send DELETE '/v2.0/user/<%= @config["user"]["name"] %>' query with user without privileges
+    Then response should be '401'
+
+  Scenario: delete user without header 'Accept'
+    When I send DELETE '/v2.0/user/<%= @config["user"]["name"] %>' query without header 'Accept'
+    Then response should be '406'
+
+  Scenario: delete unknown user
+    When I send DELETE '/v2.0/user/unknown' query
+    Then response should be '404'
+
+  Scenario: delete user
+    When I send DELETE '/v2.0/user/<%= @config["user"]["name"] %>' query
+    Then response should be '200'
+    And the Content-Type header should include 'application/json'
+

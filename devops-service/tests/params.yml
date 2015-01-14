@@ -1,0 +1,29 @@
+---
+host: "host"
+port: 7070
+username: "test"
+password: "test"
+path_prefix: ""
+username_without_privileges: "user_for_testing_"
+password_without_privileges: "test"
+
+openstack:
+  flavor: "as_long_as_image"
+  image: "08093b30-8393-42c3-8fb3-c4df56deb967"
+  project:
+    name: "test_openstack"
+    env: "test"
+
+ec2:
+  flavor: "m1.small"
+  image: "ami-63071b0a"
+  project:
+    name: "test_ec2"
+    env: "test"
+
+script:
+  name: "cucumber_test_script"
+
+user:
+  name: "cucumber_test"
+

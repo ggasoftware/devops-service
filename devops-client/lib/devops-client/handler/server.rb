@@ -9,6 +9,7 @@ class Server < Handler
 
   def initialize(host, def_options={})
     self.host = host
+    self.options = def_options
     @options_parser = ServerOptions.new(ARGV, def_options)
   end
 
@@ -40,6 +41,12 @@ class Server < Handler
     when "unpause"
       self.options = @options_parser.unpause_options
       unpause_handler @options_parser.args
+    when "reserve"
+      self.options = @options_parser.reserve_options
+      reserve_handler @options_parser.args
+    when "unreserve"
+      self.options = @options_parser.unreserve_options
+      unreserve_handler @options_parser.args
     when "add"
       self.options = @options_parser.add_options
       add_static_handler @options_parser.args
@@ -57,7 +64,7 @@ class Server < Handler
     @list = case args[2]
     when "chef"
       get("/servers/chef").map {|l| {"chef_node_name" => l}}
-    when "ec2", "openstack"
+    when "ec2", "openstack", "static"
       get("/servers/#{args[2]}")
     else
       @options_parser.invalid_list_command
@@ -143,7 +150,7 @@ class Server < Handler
       :key => args[6]
     }
     q[:public_ip] = self.options[:public_ip] unless self.options[:public_ip].nil?
-    post_chunk "/server/add", q
+    post "/server/add", q
   end
 
   def pause_handler args
@@ -152,7 +159,7 @@ class Server < Handler
       @options_parser.invalid_pause_command
       abort(r)
     end
-    post "/server/#{args[2]}/pause"
+    post "/server/#{args[2]}/pause", options
   end
 
   def unpause_handler args
@@ -161,7 +168,25 @@ class Server < Handler
       @options_parser.invalid_unpause_command
       abort(r)
     end
-    post "/server/#{args[2]}/unpause"
+    post "/server/#{args[2]}/unpause", options
+  end
+
+  def reserve_handler args
+    r = inspect_parameters @options_parser.reserve_params, args[2]
+    unless r.nil?
+      @options_parser.invalid_reserve_command
+      abort(r)
+    end
+    post "/server/#{args[2]}/reserve", options
+  end
+
+  def unreserve_handler args
+    r = inspect_parameters @options_parser.unreserve_params, args[2]
+    unless r.nil?
+      @options_parser.invalid_unreserve_command
+      abort(r)
+    end
+    post "/server/#{args[2]}/unreserve", options
   end
 
 end

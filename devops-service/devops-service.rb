@@ -8,6 +8,7 @@ require "fileutils"
 $:.push File.dirname(__FILE__)
 require "db/exceptions/invalid_record"
 require "db/exceptions/record_not_found"
+require "db/validators/all"
 require "db/mongo/mongo_connector"
 require "providers/provider_factory"
 
@@ -29,14 +30,9 @@ class DevopsService < Sinatra::Base
     [:keys_dir, :scripts_dir].each {|key| d = @@config[key]; FileUtils.mkdir_p(d) unless File.exists?(d) }
     mongo = DevopsService.mongo
     mongo.create_root_user
-    ::Version2_0::Provider::ProviderFactory.all.each do |p|
-      begin
-        mongo.key p.ssh_key, Key::SYSTEM
-      rescue RecordNotFound => e
-        k = Key.new({"id" => p.ssh_key, "path" => p.certificate_path, "scope" => Key::SYSTEM})
-        mongo.key_insert k
-      end
-    end
+    ::Provider::ProviderFactory.init(config)
+    set_up_providers_keys!(::Provider::ProviderFactory.all, mongo)
+
   end
 
   @@mongo
@@ -60,5 +56,19 @@ class DevopsService < Sinatra::Base
   end
 
   use ::Version2_0::V2_0
+
+  private
+
+  def set_up_providers_keys!(providers, mongo)
+    providers.each do |provider|
+      next if provider.certificate_path.nil?
+      begin
+        mongo.key provider.ssh_key, Key::SYSTEM
+      rescue RecordNotFound => e
+        k = Key.new({"id" => provider.ssh_key, "path" => provider.certificate_path, "scope" => Key::SYSTEM})
+        mongo.key_insert k
+      end
+    end
+  end
 
 end

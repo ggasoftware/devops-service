@@ -186,8 +186,8 @@ And copy your ec2 certificate 'ec2.pem' into /devops/.ssh/
 	env=production
 	start() {
 	  echo "Starting devops service"
-	  PIDDIR="${pid_file%/?*}"
-	  if [ ! -f $PIDDIR ]; then
+	  PIDDIR=`dirname $pid_file`
+	  if [ ! -d $PIDDIR ]; then
 	    mkdir -p $PIDDIR
 	    chown $user $PIDDIR
 	  fi

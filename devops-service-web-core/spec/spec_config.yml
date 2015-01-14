@@ -1,0 +1,5 @@
+username: "username"
+password: "password"
+test_data:
+  image: "653e6048-2df5-4fdc-9d47-0dce2a50d190"
+exclude_broken: true

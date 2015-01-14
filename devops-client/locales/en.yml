@@ -8,6 +8,7 @@ en:
     property:
       lang: "Language (%{langs})"
       host: "Devops server host and port (host:port)"
+      prefix: "Path prefix"
       api: "API version"
       username: "Username"
       password: "Password"
@@ -52,6 +53,7 @@ en:
       create:
         ssh_user: "The ssh username"
         template: "Bootstrap template or empty value"
+        template_empty: "No bootatrap template found, it will be used default template"
     filter:
       question:
         delete: "Are you sure to delete image filter(s) '%{name}'?"
@@ -240,6 +242,7 @@ en:
       version: "devops client version"
       host: "devops service host address (%{host})"
       api: "devops service API version (%{api})"
+      prefix: "devops service path prefix (%{prefix})"
       username: "devops username (%{username})"
       format: "Output format: '%{formats}' (%{format})"
       completion: "Initialize bash completion script"

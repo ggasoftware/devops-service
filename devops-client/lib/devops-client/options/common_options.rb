@@ -125,6 +125,11 @@ class CommonOptions
         o[:api] = a
       end
 
+      o[:prefix] = default_options[:prefix]
+      opts.on("--prefix PREFIX", I18n.t("options.common.prefix", :prefix => o[:prefix])) do |p|
+        o[:prefix] = p
+      end
+
       o[:username] = default_options[:username]
       opts.on("--user USERNAME", I18n.t("options.common.username", :username => o[:username])) do |u|
         o[:username] = u.strip

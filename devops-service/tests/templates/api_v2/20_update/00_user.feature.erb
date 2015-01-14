@@ -1,0 +1,202 @@
+@user
+Feature: change user privileges and password
+
+  <% %w{password email}.each do |k| %>
+  <% val = (k == "email" ? "#{@config["user"]["name"]}@test.test" : @config["user"]["name"]) %>
+  Scenario: change user <%= k %> with user without privileges
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>/<%= k %>' query with JSON body with user without privileges
+    """
+    {
+      "<%= k %>": "<%= val %>"
+    }
+    """
+    Then response should be '401'
+
+  Scenario: change root <%= k %>
+    When I send PUT '/v2.0/user/root/<%= k %>' query with JSON body
+    """
+    {
+      "<%= k %>": "<%= val %>"
+    }
+    """
+    Then response should be '401'
+
+  Scenario: change user <%= k %> without header 'Accept'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>/<%= k %>' query with JSON body without header 'Accept'
+    """
+    {
+      "<%= k %>": "<%= val %>"
+    }
+    """
+    Then response should be '406'
+
+  Scenario: change user <%= k %> without header 'Content-Type'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>/<%= k %>' query with JSON body without header 'Content-Type'
+    """
+    {
+      "<%= k %>": "<%= val %>"
+    }
+    """
+    Then response should be '415'
+
+  Scenario: change user <%= k %>, invalid body: empty
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>/<%= k %>' query with JSON body
+    """
+    """
+    Then response should be '400'
+
+  <% ["{}", "[]", ""].each do |body| %>
+  Scenario: change user <%= k %>, invalid body: body is a '<%= body %>'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>/<%= k %>' query with JSON body
+    """
+    <%= body %>
+    """
+    Then response should be '400'
+  <% end %>
+  <% elements = ["{}", "[]", "null" ] %>
+  <% elements.each do |value| %>
+  Scenario: change user <%= k %>, invalid body: <%= k %> is a '<%= value %>'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>/<%= k %>' query with JSON body
+    """
+    {
+      "<%= k %>": <%= value %>
+    }
+    """
+    Then response should be '400'
+  <% end %>
+
+  Scenario: change user <%= k %>
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>/<%= k %>' query with JSON body
+    """
+    {
+      "<%= k %>": "<%= val %>"
+    }
+    """
+    Then response should be '200'
+    And the Content-Type header should include 'application/json'
+
+  <% end %>
+
+  Scenario: change user privileges with user without privileges
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body with user without privileges
+    """
+    {}
+    """
+    Then response should be '401'
+
+  Scenario: change root privileges
+    When I send PUT '/v2.0/user/root' query with JSON body
+    """
+    {}
+    """
+    Then response should be '401'
+
+  Scenario: change user privileges without header 'Accept'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body without header 'Accept'
+    """
+    {}
+    """
+    Then response should be '406'
+
+  Scenario: change user privileges without header 'Content-Type'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body without header 'Content-Type'
+    """
+    {}
+    """
+    Then response should be '415'
+
+  <% ["[]", ""].each do |body| %>
+  Scenario: change user privileges, invalid body: body is a '<%= body %>'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    <%= body %>
+    """
+    Then response should be '400'
+  <% end %>
+  <% elements = ["{}", "[]" ] %>
+  <% elements.each do |value| %>
+  Scenario: change user privileges, invalid body: cmd is a '<%= value %>'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    {
+      "cmd": "<%= value %>",
+      "privileges": "r"
+    }
+    """
+    Then response should be '400'
+
+  Scenario: change user privileges, invalid body: privileges is a '<%= value %>'
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    {
+      "cmd": "all",
+      "privileges": "<%= value %>"
+    }
+    """
+    Then response should be '400'
+  <% end %>
+
+  Scenario: change user privileges: foo - r
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    {
+      "cmd": "foo",
+      "privileges": "r"
+    }
+    """
+    Then response should be '400'
+  <% %w{foo, rr, rwwww, rwxxx, rwf}.each do |priv| %>
+  Scenario: change user privileges: all - <%= priv %>
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    {
+      "cmd": "all",
+      "privileges": "<%= priv %>"
+    }
+    """
+    Then response should be '400'
+  <% end %>
+
+  <% privs = %w{r w x rw rx wx rwx} %>
+
+  <% %w{flavor group image project server key user filter network provider script templates all}.each do |cmd| %>
+    <% privs.each do |priv| %>
+  Scenario: change user privileges: <%= cmd %> - <%= priv %>
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    {
+      "cmd": "<%= cmd %>",
+      "privileges": "<%= priv %>"
+    }
+    """
+    Then response should be '200'
+    <% end %>
+  Scenario: change user privileges: <%= cmd %> - without privileges
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    {
+      "cmd": "<%= cmd %>"
+    }
+    """
+    Then response should be '200'
+
+  Scenario: change user privileges: <%= cmd %> - '  '
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    {
+      "cmd": "<%= cmd %>",
+      "privileges": "  "
+    }
+    """
+    Then response should be '400'
+
+  <% end %>
+
+  Scenario: change user privileges: set default privileges
+    When I send PUT '/v2.0/user/<%= @config["user"]["name"] %>' query with JSON body
+    """
+    {
+    }
+    """
+    Then response should be '200'
+

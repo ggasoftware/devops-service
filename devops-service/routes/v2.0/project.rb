@@ -5,6 +5,7 @@ require "db/exceptions/invalid_record"
 require "commands/deploy"
 require "commands/status"
 require "commands/server"
+require "workers/project_test_worker"
 
 module Version2_0
   class ProjectRoutes < BaseRoutes
@@ -16,15 +17,6 @@ module Version2_0
     def initialize wrapper
       super wrapper
       puts "Project routes initialized"
-    end
-
-    before "/project/:id" do
-      if request.get?
-        check_headers :accept
-      else
-        check_headers :accept, :content_type
-      end
-      check_privileges("project")
     end
 
     before "/project/:id/user" do
@@ -50,16 +42,23 @@ module Version2_0
     #   - method : GET
     #   - headers :
     #     - Accept: application/json
+    #   - params :
+    #     - fields - show project fields, available values: deploy_envs, type
     #
     # * *Returns* :
     #   [
-    #     "project_1"
+    #     {"name" : "project_1"}
     #   ]
-    # TODO: list with environments
     get "/projects" do
       check_headers :accept
       check_privileges("project", "r")
-      json BaseRoutes.mongo.projects.map {|p| p.id}
+      fields = []
+      if params.key?("fields") and params["fields"].is_a?(Array)
+        Project.fields.each do |k|
+          fields.push k if params["fields"].include?(k)
+        end
+      end
+      json BaseRoutes.mongo.projects(nil, nil, fields).map {|p| p.to_hash}
     end
 
     # Get project by id
@@ -95,6 +94,8 @@ module Version2_0
     #     "name": "project_1"
     #   }
     get "/project/:project" do
+      check_headers :accept
+      check_privileges("project", "r")
       json BaseRoutes.mongo.project(params[:project])
     end
 
@@ -226,6 +227,8 @@ module Version2_0
     #   200 - Updated
     # TODO: multi project
     put "/project/:id" do
+      check_headers
+      check_privileges("project", "w")
       project = Project.new(create_object_from_json_body)
       project.id = params[:id]
       old_project = BaseRoutes.mongo.project params[:id]
@@ -331,6 +334,8 @@ module Version2_0
     # * *Returns* :
     #   200 - Deleted
     delete "/project/:id" do
+      check_headers :accept, :content_type
+      check_privileges("project", "w")
       servers = BaseRoutes.mongo.servers params[:id]
       raise DependencyError.new "Deleting #{params[:id]} is forbidden: Project has servers" if !servers.empty?
       body = create_object_from_json_body(Hash, true)
@@ -349,7 +354,7 @@ module Version2_0
       create_response(info)
     end
 
-    # Run chef-client on project servers
+    # Run chef-client on reserved project servers
     #
     # * *Request*
     #   - method : POST
@@ -366,40 +371,56 @@ module Version2_0
     # * *Returns* : text stream
     post "/project/:id/deploy" do
       check_headers :content_type
-      check_privileges("project", "w")
+      check_privileges("project", "x")
       obj = create_object_from_json_body
       check_string(obj["deploy_env"], "Parameter 'deploy_env' should be a not empty string", true)
       check_array(obj["servers"], "Parameter 'servers' should be a not empty array of strings", String, true)
       project = BaseRoutes.mongo.project(params[:id])
-      servers = BaseRoutes.mongo.servers(params[:id], obj["deploy_env"])
-      unless obj["servers"].nil?
-        logger.debug "Servers in params: #{obj["servers"].inspect}\nServers: #{servers.map{|s| s.chef_node_name}.inspect}"
-        servers.select!{|ps| obj["servers"].include?(ps.chef_node_name)}
-      end
+      servers = BaseRoutes.mongo.servers(params[:id], obj["deploy_env"], obj["servers"], true)
       keys = {}
-      stream() do |out|
-        begin
-          out << (servers.empty? ? "No servers to deploy\n" : "Deploy servers: '#{servers.map{|s| s.chef_node_name}.join("', '")}'\n")
-          status = []
-          servers.each do |s|
+      if obj.key?("trace")
+        stream() do |out|
+          begin
+            out << (servers.empty? ? "No reserved servers to deploy\n" : "Deploy servers: '#{servers.map{|s| s.chef_node_name}.join("', '")}'\n")
+            status = []
+            servers.each do |s|
+              logger.debug "Deploy server: #{s.inspect}"
 
-            begin
-              BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, request.env['REMOTE_USER']
-            rescue InvalidPrivileges, RecordNotFound  => e
-              out << e.message + "\n"
-              status.push 2
-              next
+              begin
+                BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, request.env['REMOTE_USER']
+              rescue InvalidPrivileges, RecordNotFound  => e
+                out << e.message + "\n"
+                status.push 2
+                next
+              end
+              unless keys.key? s.key
+                k = BaseRoutes.mongo.key s.key
+                keys[s.key] = k.path
+              end
+              status.push(deploy_server(out, s, keys[s.key]))
             end
-            unless keys.key? s.key
-              k = BaseRoutes.mongo.key s.key
-              keys[s.key] = k.path
-            end
-            status.push(deploy_server out, s, keys[s.key])
+            out << create_status(status)
+          rescue IOError => e
+            logger.error e.message
           end
-          out << create_status(status)
-        rescue IOError => e
-          logger.error e.message
         end
+      else
+        dir = DevopsService.config[:report_dir_v2]
+        files = []
+        uri = URI.parse(request.url)
+        servers.each do |s|
+          project = begin
+            BaseRoutes.mongo.check_project_auth s.project, s.deploy_env, request.env['REMOTE_USER']
+          rescue InvalidPrivileges, RecordNotFound  => e
+            next
+          end
+          jid = DeployWorker.perform_async(dir, s.to_hash, [], DevopsService.config)
+          logger.info "Job '#{jid}' has been started"
+          uri.path =  "#{DevopsService.config[:url_prefix]}/v2.0/report/" + jid
+          files.push uri.to_s
+        end
+        json files
+
       end
     end
 
@@ -474,76 +495,35 @@ module Version2_0
       check_privileges("project", "r")
       project = BaseRoutes.mongo.project(params[:id])
       env = project.deploy_env params[:env]
-      user = request.env['REMOTE_USER']
-      provider = ::Version2_0::Provider::ProviderFactory.get(env.provider)
-      header = "Test project '#{project.id}' and environment '#{env.identifier}'"
-      logger.info header
-      servers = extract_servers(provider, project, env, {}, user, BaseRoutes.mongo)
-      result = {:servers => []}
-      project.deploy_envs = [ env ]
-      result[:project] = project.to_hash
-      servers.each do |s|
-        sr = {}
-        t1 = Time.now
-        out = ""
-        if provider.create_server(s, out)
-          t2 = Time.now
-          sr[:id] = s.id
-          sr[:create] = {:status => true}
-          sr[:create][:time] = time_diff_s(t1, t2)
-          logger.info "Server with parameters: #{s.to_hash.inspect} is running"
-          key = BaseRoutes.mongo.key(s.key)
-          b_out = ""
-          r = bootstrap(s, b_out, key.path, logger)
-          t1 = Time.now
-          sr[:chef_node_name] = s.chef_node_name
-          if r == 0
-            sr[:bootstrap] = {:status => true}
-            sr[:bootstrap][:time] = time_diff_s(t2, t1)
-            logger.info "Server with id '#{s.id}' is bootstraped"
-            if check_server(s)
-              BaseRoutes.mongo.server_insert s
-            end
-          else
-            sr[:bootstrap] = {:status => false}
-            sr[:bootstrap][:log] = b_out
-            sr[:bootstrap][:return_code] = r
-          end
+      logger.info "Test project '#{project.id}' and environment '#{env.identifier}'"
 
-          t1 = Time.now
-          r = delete_from_chef_server(s.chef_node_name)
-          begin
-            r[:server] = provider.delete_server s.id
-          rescue Fog::Compute::OpenStack::NotFound, Fog::Compute::AWS::Error
-            r[:server] = "Server with id '#{s.id}' not found in '#{provider.name}' servers"
-            logger.warn r[:server]
-          end
-          BaseRoutes.mongo.server_delete s.id
-          t2 = Time.now
-          sr[:delete] = {:status => true}
-          sr[:delete][:time] = time_diff_s(t1, t2)
-          sr[:delete][:log] = r
-        else
-          sr[:create] = {:status => false}
-          sr[:create][:log] = out
-        end
-        result[:servers].push sr
-      end
-      create_response(header, result)
+      dir = DevopsService.config[:report_dir_v2]
+      uri = URI.parse(request.url)
+      p = {
+        :project => project.id,
+        :env => env.identifier,
+        :user => request.env['REMOTE_USER']
+      }
+      jid = ProjectTestWorker.perform_async(dir, p, DevopsService.config)
+      logger.info "Job '#{jid}' has been created"
+      uri.path = "#{DevopsService.config[:url_prefix]}/v2.0/report/" + jid
+      files = [uri.to_s]
+      sleep 1
+      json files
     end
 
   private
     def create_roles project_id, envs, logger
       all_roles = KnifeCommands.roles
-      return "Can't get roles list" if all_roles.nil?
+      return " Can't get roles list" if all_roles.nil?
       roles = {:new => [], :error => [], :exist => []}
       envs.each do |e|
-        role_name = project_id + (DevopsService.config[:role_separator] || "_") + e.identifier
+        role_name = KnifeCommands.role_name(project_id, e.identifier)
         begin
           if all_roles.include? role_name
             roles[:exist].push role_name
           else
-            KnifeCommands.create_role project_id, e.identifier
+            KnifeCommands.create_role role_name, project_id, e.identifier
             roles[:new].push role_name
             logger.info "Role '#{role_name}' created"
           end
@@ -563,11 +543,15 @@ module Version2_0
     end
 
     def create_roles_response roles
-      info = ""
-      info += " Project roles '#{roles[:new].join("', '")}' have been automaticaly created" unless roles[:new].empty?
-      info += " Project roles '#{roles[:exist].join("', '")}' weren't created because they exist" unless roles[:exist].empty?
-      info += " Project roles '#{roles[:error].join("', '")}' weren't created because of internal error" unless roles[:error].empty?
-      info
+      if roles.is_a?(String)
+        roles
+      else
+        info = ""
+        info += " Project roles '#{roles[:new].join("', '")}' have been automaticaly created" unless roles[:new].empty?
+        info += " Project roles '#{roles[:exist].join("', '")}' weren't created because they exist" unless roles[:exist].empty?
+        info += " Project roles '#{roles[:error].join("', '")}' weren't created because of internal error" unless roles[:error].empty?
+        info
+      end
     end
   end
 end
