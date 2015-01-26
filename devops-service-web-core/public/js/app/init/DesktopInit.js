@@ -54,7 +54,6 @@ require([
     App.alertRegion.show(new AlertView(options));
   });
 
-  console.log(App.request('pathPrefix'));
   EnvMainModule.start();
 
   Breadcrumbs.start();
@@ -64,8 +63,10 @@ require([
   App.reqres.setHandler("pathPrefix", function () {
     return '';
   });
-
+    
   var getAppMetadata = function () {
+      
+    console.info('Getting app metadata...');
 
     $.ajax({
       method: 'get',
@@ -149,5 +150,8 @@ require([
     App.start();
 
   };
+    
+  getAppMetadata();
+    
 
 });

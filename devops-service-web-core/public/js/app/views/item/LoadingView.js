@@ -1,11 +1,11 @@
 define([
 
-  'hbs!templates/loading'
+  'hbs!templates/loading', 'marionette'
 
-], function (loadingTemplate) {
+], function (loadingTemplate, Marionette) {
 
   'use strict';
-
+  
   return Backbone.Marionette.ItemView.extend({
 
     title: "Loading Data",

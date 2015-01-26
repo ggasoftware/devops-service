@@ -1,8 +1,9 @@
 define([
 
-  'hbs!templates/alert'
+  'hbs!templates/alert',
+  'marionette'
 
-], function (alertTemplate) {
+], function (alertTemplate, Marionette) {
 
   'use strict';
 
