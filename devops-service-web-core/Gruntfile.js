@@ -27,7 +27,7 @@ module.exports = function(grunt) {
                     wrapShim: true,
                     findNestedDependencies: true,
                     // Cannot use almond since it does not currently appear to support requireJS's config-map
-                    name: "../libs/almond",
+                    name: "../libs/almond/almond",
                     preserveLicenseComments: false,
                     optimize: "uglify",
                     mainConfigFile: "public/js/app/config/config.js",
