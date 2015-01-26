@@ -10,6 +10,7 @@ Bundler.require :default, ENV['RACK_ENV'].to_sym
 
 require_relative 'lib/env/app.rb'
 
+
 require_relative 'lib/env/routes/auth'
 require_relative 'lib/env/routes/extra'
 
@@ -85,7 +86,7 @@ class DevopsServiceWeb < Sinatra::Base
   def validate(username, password)
     http = HTTPClient.new
     http.set_auth(host, username, password)
-    res = http.get(host + '/v2.0/projects', query = nil, json_headers)
+    res = http.get(host + '/v2.0/projects', nil, json_headers)
     return res.ok?
   end
 
