@@ -125,7 +125,7 @@ class DevopsServiceWeb < Sinatra::Base
   end
 
   def session_creds
-    { username: session[:username], email: session[:email] }
+    { username: session[:username], email: session[:email], password: session[:password] }
   end
 
   def api_call(path, query: nil, data: nil, method: :get, creds: session_creds)
@@ -142,6 +142,8 @@ class DevopsServiceWeb < Sinatra::Base
   end
 
   def submit creds
+    puts "submitting..."
+    puts creds
     http = HTTPClient.new
     http.set_auth(host, creds[:username], creds[:password])
     res = yield http
