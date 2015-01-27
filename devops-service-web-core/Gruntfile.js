@@ -56,6 +56,13 @@ module.exports = function(grunt) {
         },
 
         watch: {
+          env: {
+            files: [ 'lib/env/**/*.*' ],
+            tasks: ['prepareBuild'],
+            options: {
+              livereload: true
+            },
+          },
           another: {
             files: [ 'public/**/*.*' ],
             options: {
