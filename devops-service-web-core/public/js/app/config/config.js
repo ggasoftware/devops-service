@@ -39,6 +39,11 @@ require.config({
       'deps': ['underscore', 'jquery'],
       'exports': 'Backbone'
     },
+    
+    'backbone.syphon': {
+      'deps': ['backbone'],
+      'exports': 'Backbone.Syphon'
+    },
 
     'marionette': {
       'deps': ['underscore', 'backbone', 'jquery'],
