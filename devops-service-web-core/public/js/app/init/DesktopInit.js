@@ -53,8 +53,11 @@ require([
   App.on('alert:show', function (options) {
     App.alertRegion.show(new AlertView(options));
   });
+    
 
   EnvMainModule.start();
+    
+  EnvMainModule.performAuth();
 
   Breadcrumbs.start();
 
@@ -151,7 +154,8 @@ require([
 
   };
     
-  getAppMetadata();
+  App.on('auth:done', function() {
+    getAppMetadata();
+  });
     
-
 });
