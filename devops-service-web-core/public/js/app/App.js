@@ -11,6 +11,17 @@ define([
   'use strict';
 
   var App = new Backbone.Marionette.Application({
+
+    moduleClasses: {
+      Common: Marionette.Module.extend({
+        log: function(message, obj) {
+     	  message = message || "";  
+	  obj = obj || "";  
+	  console.info("[" + this.moduleName + "]: " + message, obj);  
+        } 
+      }),
+    },
+
     log: function (type, message) {
       if (type === 'err') {
         this.execute('console:error', message);
@@ -18,7 +29,7 @@ define([
     },
 
     dlog: function (params, o) {
-//        console.log(params, o);
+        console.info(params, o);
     }
   });
 
