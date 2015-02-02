@@ -3,14 +3,21 @@ require.config({
   baseUrl: './js/app',
 
   paths: {
+
     'jquery': '../libs/jquery/jquery',
     'jqueryui': '../libs/jqueryui/jquery-ui',
     'jquerymobile': '../libs/jquery-mobile/jquery.mobile',
+
     'underscore': '../libs/underscore/underscore',
+
     'backbone': '../libs/backbone/backbone',
+    'backbone.syphon': '../libs/backbone.syphon/lib/backbone.syphon',
+    'backbone.wreqr': '../libs/backbone.wreqr/backbone.wreqr',
+    'backbone.babysitter': '../libs/backbone.babysitter/backbone.babysitter',
+
     'marionette': '../libs/backbone.marionette/backbone.marionette',
     'handlebars': '../libs/handlebars/handlebars',
-    'hbs': '../libs/hbs/hbs',
+    'hbs': '../libs/require-handlebars-plugin/hbs',
     'i18nprecompile': '../libs/require-handlebars-plugin/hbs/i18nprecompile',
     'json2': '../libs/require-handlebars-plugin/hbs/json2',
     'backbone.validateAll': '../libs/Backbone.validateAll/src/javascripts/Backbone.validateAll',
@@ -19,7 +26,6 @@ require.config({
     'backbone.caching-fetcher': '../libs/backbone.caching-fetcher/backbone.caching-fetcher',
     'envMainModule': '../../env/js/app/modules/Env',
     'envInitModule': '../../env/modules/Init',
-    'backbone.syphon': '../libs/backbone.syphon/lib/backbone.syphon'
   },
 
   shim: {
@@ -32,6 +38,11 @@ require.config({
     'backbone': {
       'deps': ['underscore', 'jquery'],
       'exports': 'Backbone'
+    },
+    
+    'backbone.syphon': {
+      'deps': ['backbone'],
+      'exports': 'Backbone.Syphon'
     },
 
     'marionette': {
@@ -66,6 +77,7 @@ require.config({
     templateExtension: 'html',
     helperDirectory: 'templates/helpers/',
     i18nDirectory: 'templates/i18n/',
+    disableI18n : true,
 
     compileOptions: {}
   }

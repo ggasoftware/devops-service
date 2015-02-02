@@ -3,9 +3,10 @@ define([
   'jquery',
   'hbs!templates/modals/server_create/dialog',
 
-  'backbone'
+  'backbone',
+  'marionette'
 
-], function($, modalTemplate, Backbone) {
+], function($, modalTemplate, Backbone, Marionette) {
 
   'use strict';
 

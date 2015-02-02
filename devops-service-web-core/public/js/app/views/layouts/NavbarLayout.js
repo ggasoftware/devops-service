@@ -7,29 +7,26 @@ define([
 
   'use strict';
 
-  DSW.module('Views.Layouts.Navbar', function (module, app) {
+  DSW.module('Views.Layouts.Navbar', {
+      
+   moduleClass: DSW.moduleClasses.Common,
+
+   define: function (module, app) {
 
     module.startWithParent = false;
 
     module.on('start', function () {
-      console.log('>>> started Navbar');
 
-      var promise = $.ajax({
-        url: app.request('url:get', '/requests/count')
-      });
-
-      promise.done(function(r) {
-        var projectsCount = JSON.parse(r).project;
-        app.navbarRegionNav.show(new module.c({projectsCount: projectsCount}));
-      });
+      module.log('started');
 
       var envModule = app.module('Env');
+      envModule.prepareNavbarData();
       envModule.showCustomNavbar();
 
     });
 
     module.on('before:stop', function () {
-      console.log('>>> stopping Navbar...');
+      module.log('stopping...');
       app.navbarRegionNav.empty();
     });
 
@@ -118,7 +115,7 @@ define([
 
     });
 
-  });
+  }});
 
   return DSW.Views.Layouts.Navbar;
 
